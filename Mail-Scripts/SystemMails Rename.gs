@@ -19,116 +19,87 @@ utilitys:
 https://gist.github.com/mogsdad/6515581
 
 */
-
-// startup function
-//function doGet() {
-//  return HtmlService.createHtmlOutputFromFile('index')
-//      .setSandboxMode(HtmlService.SandboxMode.IFRAME);
-//}
-
-
-// The script will check your Gmail mailbox every minute
-// with the help of a CLOCK based trigger.
-function Setup_Rename_SystemMails()
-{
-
-  //Cleanup Trigger:  
-  var triggers = ScriptApp.getProjectTriggers();
-  
-  for(var i in triggers) {
-    if (triggers[i].getHandlerFunction() == 'Exec_Gmail_Rename_RequestExpress')
-    {
-      ScriptApp.deleteTrigger(triggers[i]);
-    }
-    else if (triggers[i].getHandlerFunction() == 'Exec_Gmail_Rename_SystemMails')
-    {
-      ScriptApp.deleteTrigger(triggers[i]);
-    }
-  }
-  
-  //Setup Trigger:  
-  ScriptApp.newTrigger('Exec_Gmail_Rename_SystemMails')
-   .timeBased()
-   .everyMinutes(5)
-   .create();
-
-  var userMail = Session.getActiveUser().getEmail();
-  
-  //Setup Propertys:  
-  var userProperties = PropertiesService.getUserProperties();
-  
-  //userProperties.deleteAllProperties();
-  userProperties.setProperty('MailDoneLabelName', 'z/processed mail');
-  userProperties.setProperty('MailErrorLabelName', 'z/error process mail');
-  userProperties.setProperty('LogFileTable', '1J5aEPKiQ1zSQMbANr13kCvaqhx9_NOTzB1Ub8rDhnb0'); //'1J5aEPKiQ1zSQMbANr13kCvaqhx9_NOTzB1Ub8rDhnb0' https://drive.google.com/open?id=1J5aEPKiQ1zSQMbANr13kCvaqhx9_NOTzB1Ub8rDhnb0&authuser=0
-  userProperties.setProperty('LogFileTableTab', 'Rename_SystemMails_' + userMail);
-
-  userProperties.setProperty('TestMode', false); //false
-  userProperties.setProperty('LogFileLevel', 'INFO'); //The new log level e.g. "OFF","SEVERE","WARNING","INFO","CONFIG","FINE","FINER","FINEST" or "ALL".  
-  
-  //Test Script
-  Exec_Gmail_Rename_SystemMails();
-}
  
 // This will auto-save the image attachments from Gmail to Google Drive
 function Exec_Gmail_Rename_SystemMails()
 {
-  var userProperties = PropertiesService.getUserProperties();
-  //var data = userProperties.getProperties();
-  var testMode = (userProperties.getProperty('TestMode')=== 'true');
-  var labelNameProcessed = userProperties.getProperty('MailDoneLabelName'); //"z/processed mail";
-  var labelNameError = userProperties.getProperty('MailErrorLabelName'); //"z/error process mail";
-  
-  //https://sites.google.com/site/scriptsexamples/custom-methods/betterlog
-  //Best practice for using BetterLog and logging to a spreadsheet:
-  //The new log level e.g. "OFF","SEVERE","WARNING","INFO","CONFIG","FINE","FINER","FINEST" or "ALL".
-  Logger = BetterLog.setLevel(userProperties.getProperty('LogFileLevel'),userProperties.getProperty('LogFileTableTab')).useSpreadsheet(userProperties.getProperty('LogFileTable'),userProperties.getProperty('LogFileTableTab')); //automatically rolls over at 50,000 rows
-
-  var labelProcessed = GmailApp.getUserLabelByName(labelNameProcessed);   
-  if ( ! labelProcessed ) {
-      labelProcessed = GmailApp.createLabel(labelNameProcessed);
-  }
-  labelNameProcessed = labelNameProcessed.replace(/\s|\\|\//g, '-').toLowerCase();
-  
-  var labelError = GmailApp.getUserLabelByName(labelNameError);   
-  if ( ! labelError ) {
-      labelError = GmailApp.createLabel(labelNameError);
-  }  
-  labelNameError  = labelNameError.replace(/\s|\\|\//g, '-').toLowerCase(); 
-  
-  var searchQuery = "from:(request.application@globalfoundries.com OR globalfoundries@service-now.com OR Request Application OR ServiceNow) is:unread -subject:{redirect} -label:" + labelNameProcessed + " -label:" + labelNameError + " -has:attachment";
-   
-  var threads = GmailApp.search(searchQuery);
-  var cnt = threads.length;
-  if (cnt >10)
+  initLog('RenameMail');
+  try
   {
-    threads = GmailApp.search(searchQuery,cnt-10,10);
-  }
-  Logger.fine("Start!! found " + cnt + " threads, searching in the last " + threads.length);
-  Logger.finest("searchQuery='" + searchQuery + "'");
+  
+    var userProperties = PropertiesService.getUserProperties();
+    //var data = userProperties.getProperties();
+    var testMode = (userProperties.getProperty('TestMode')=== 'true');
+    var labelNameProcessed = userProperties.getProperty('renameMailLabelProcessed'); //"z/processed mail";
+    var labelNameError = userProperties.getProperty('renameMailLabelError'); //"z/error process mail";
     
-  for (var x=threads.length-1; x>=0; x--)
-  {  
-    var messages = threads[x].getMessages();
-    threads[x].addLabel(labelProcessed);    
-    for (var y=0; y<messages.length; y++)
-    {          
-      try
-      {		
-        processMessageGeneric_(messages[y], testMode, labelProcessed, labelNameProcessed);      
-      }catch(err){        
-       	Logger.severe('Error occured!! - ' + err + ' - (line=' + err.lineNumber + ')');
-       	messages[y].markUnread();
-     	threads[x].addLabel(labelError);
-        threads[x].removeLabel(labelProcessed);
-      }        
+    if (!labelNameProcessed || !labelNameError)
+    {
+      throw 'Run Setup_Send_SMS first!!';
     }
-  }
-  if (threads.length >0)
-    Logger.finer("End!!");
+    
+    var labelProcessed = GmailApp.getUserLabelByName(labelNameProcessed);   
+    if ( ! labelProcessed ) {
+      labelProcessed = GmailApp.createLabel(labelNameProcessed);
+    }
+    labelNameProcessed = labelNameProcessed.replace(/\s|\\|\//g, '-').toLowerCase();
+    
+    var labelError = GmailApp.getUserLabelByName(labelNameError);   
+    if ( ! labelError ) {
+      labelError = GmailApp.createLabel(labelNameError);
+    }  
+    labelNameError  = labelNameError.replace(/\s|\\|\//g, '-').toLowerCase(); 
+    
+    var searchQuery = userProperties.getProperty('renameMailSearchQuery'); //"from:(request.application@globalfoundries.com OR globalfoundries@service-now.com OR Request Application OR ServiceNow) is:unread -subject:{redirect} -has:attachment";
+    var searchQuery = searchQuery + " -label:" + labelNameProcessed + " -label:" + labelNameError + " -MailChangedByScriptX";
+    
+    var searchQuerySimilar = userProperties.getProperty('renameMailSearchQuerySimilar');
+    
+    var threads = GmailApp.search(searchQuery);
+    var cnt = threads.length;
+    if (cnt >10)
+    {
+      threads = GmailApp.search(searchQuery,cnt-10,10);
+    }
+    
+    if (threads.length>0) {
+      doLogInfo("Start!! found " + cnt + " threads, searching in the last " + threads.length + " searchQuery='" + searchQuery + "'");    
+      for (var x=threads.length-1; x>=0; x--)
+      {  
+        threads[x].addLabel(labelProcessed);    
+        var messages = threads[x].getMessages();
+        if (messages) {
+          for (var y=0; y<messages.length; y++)
+          {          
+            try
+            {		
+              processMessageGeneric_(messages[y], testMode, labelProcessed, labelNameProcessed, searchQuerySimilar);      
+            } catch (e) {
+              e = (typeof e === 'string') ? new Error(e) : e;
+              Logger.severe('%s -> Error occured!! %s: %s (line %s, file "%s"). Stack: "%s" . While processing "%s".',
+                            Session.getEffectiveUser().getEmail(),
+                            e.name||'', 
+                            e.message||'', e.lineNumber||'', e.fileName||'', e.stack||'', messages[y].getSubject()||'');
+              messages[y].markUnread();
+              threads[x].addLabel(labelError);
+              threads[x].removeLabel(labelProcessed);
+            }        
+          }
+        }
+      }
+      doLogInfo("End!!");
+    }
+  } catch (e) {
+    e = (typeof e === 'string') ? new Error(e) : e;
+    Logger.severe('%s -> Error occured!! %s: %s (line %s, file "%s"). Stack: "%s" .',
+                  Session.getEffectiveUser().getEmail(),
+                  e.name||'', 
+                  e.message||'', e.lineNumber||'', e.fileName||'', e.stack||'');
+    throw e;
+  }     
 }
 
-function processMessageGeneric_(message, testMode, excludeLabel, excludeLabelName)
+function processMessageGeneric_(message, testMode, excludeLabel, excludeLabelName, searchQuery)
 {
   //var message = messages[y];
   var originalSubject = message.getSubject();
@@ -138,7 +109,7 @@ function processMessageGeneric_(message, testMode, excludeLabel, excludeLabelNam
   var messageId = message.getId();
   
   var sender = Session.getActiveUser().getEmail();
-  Logger.finer("--------------------------> " + originalSender + " Subject=" + originalSubject);
+  doLogFiner("--------------------------> " + originalSender + " Subject=" + originalSubject);
 
   var subjects = [{}];
   subjects = originalSubject.split(" ");
@@ -153,9 +124,9 @@ function processMessageGeneric_(message, testMode, excludeLabel, excludeLabelNam
     }
     orginalSenderID = orginalSenderID.replace(/[()@<>.]/g, '').replace(/globalfoundriescom/gi, '').trim();
 
-    var RequestID = subjects[0].replace(/\s+/g, "");
+    var RequestID = subjects[0].replace(/\s+/g, "").replace(/\[+(.*?)\]+/g,"$1");
     var RequestTyp = RequestID.replace(/\d/g, '');
-    //Logger.log("RequestID='" + RequestID+ " RequestTyp=" + RequestTyp);
+    //doLog("RequestID='" + RequestID+ " RequestTyp=" + RequestTyp);
 
     var replyMessage;
     if (originalSubject.toLowerCase().indexOf("submsr") > -1 || originalSubject.toLowerCase().indexOf("subdomain") > -1 || originalSubject.toLowerCase().indexOf(" sub ") > -1)
@@ -175,33 +146,35 @@ function processMessageGeneric_(message, testMode, excludeLabel, excludeLabelNam
       }
       
       subject = subject.trim();
-      Logger.finer("SubRequest identified: " + subject);
+      doLogFiner("SubRequest identified: " + subject);
       
       if (originalSubject.toLowerCase().indexOf("...") > -1 && subject.length > 30)
       {
         subject = subject.replace("...", ' ').trim();
         var lastIndex = subject.lastIndexOf(" ")
         subject = subject.substring(0, lastIndex);
-        Logger.finer("shorten subject " + subject);
+        doLogFiner("shorten subject " + subject);
       }
-
-      replyMessage = GetMessage_("from:(" + sender + " OR " + originalSender + " OR Request Application OR ServiceNow) subject:(" + subject + ") -subject:((Out of office) OR OOO)", messageId, date, originalSubject);
-      //Logger.log("replyMessage is= " + replyMessage.getSubject());
+      var query ="from:(" + sender + " OR " + originalSender + " OR Request Application OR ServiceNow) subject:(" + subject + ") " + searchQuery;
+      doLog("searching similar: " + query);
+      replyMessage = GetMessage_(query, messageId, date, originalSubject);
+      //doLog("replyMessage is= " + replyMessage.getSubject());
     }
     
     if (!replyMessage)
     {
-      replyMessage = GetMessage_("((from:(" + originalSender + ") " + RequestID + ") OR (" + RequestID + " " + RequestTyp + "ˣ  -subject:((Out of office) OR OOO)", messageId, date, originalSubject);
+      var query = "(from:(" + originalSender + ") " + RequestID + ") " + searchQuery; //OR (" + RequestID + " " + RequestTyp + "))
+      replyMessage = GetMessage_(query, messageId, date, originalSubject);
       //"from:(" + originalSender + ") " + RequestID + " -subject:((Out of office) OR OOO)"
       // "from:(noreply@globalfoundries.com) " + RequestExpressID;
       //((from:(Request Application <request.application@globalfoundries.com>) MSR982114) OR (MSR982114 MSRˣ)) -subject:((Out of office) OR OOO) 
     }
-    
+
     var bodyHtml = message.getBody();
     bodyHtml = bodyHtml.replace(' width="90%"',''); //.replace(' align="left"','');
 
 
-    //Logger.log("orginalSenderID is= " + orginalSenderID);
+    //doLog("orginalSenderID is= " + orginalSenderID);
     var TextContent = parseMessage_(bodyHtml,Session.getActiveUser().getEmail());
     
     var headerline = "<h2>" + originalSubject + "</h2>";
@@ -210,8 +183,7 @@ function processMessageGeneric_(message, testMode, excludeLabel, excludeLabelNam
             "<tr><td colspan='2'>--------------------------------------------------------------------------------------</td></tr>" +
               "<tr><td>original subject:</td><td>" + originalSubject + "</td></tr>" +
               "<tr><td>original Message ID:</td><td>" + message.getId() + "</td></tr>" +
-              "<tr><td>search:</td><td>" + RequestID + " - " + RequestTyp + " - " + RequestID.replace(RequestTyp, '') + " - " + TextContent.txt + "</td></tr>" + 
-              "</tbody></table></code></small>";
+              '<tr><td>search:</td><td>' + RequestID + ' - ' + RequestTyp + ' - ' + RequestID.replace(RequestTyp, '') + ' - ' + TextContent.txt + ' <a href="https://script.google.com/macros/s/AKfycbyg_3BkD9Fud0M5p3UIH1KHdTjrySWPGjLppvRol1350PUwPGs/exec">MailChangedByScriptX</a> </td></tr>';
     
     if (TextContent.TslLnk)
     {
@@ -221,6 +193,11 @@ function processMessageGeneric_(message, testMode, excludeLabel, excludeLabelNam
     {
       HtmlAddtable = HtmlAddtable + '<tr><td>Links:</td><td><a href="http://myteamsfap/sites/pm/Shared%20Documents/MSR-Help.mht">MSR based on Domain oriented Demand Management</a></td></tr>';
     }    
+    if (replyMessage)
+    {
+      HtmlAddtable = HtmlAddtable + '<tr><td>ReplyMessage:</td><td>' + replyMessage.getSubject() + '</td></tr>';
+    }
+
     HtmlAddtable = HtmlAddtable + "</tbody></table></code></small>"
   
     
@@ -233,7 +210,7 @@ function processMessageGeneric_(message, testMode, excludeLabel, excludeLabelNam
     bodyHtml = headerline + "<br>--------------------------------------------------------------------------------------<br>" + 
     bodyHtml + HtmlAddtable;
     
-    Logger.finest("body:" + bodyHtml);
+    doLogFinest("body:" + bodyHtml);
       
     /*
     bodyPlain = headerline + "\r\n--------------------------------------------------------------------------------------\r\n" +
@@ -246,7 +223,7 @@ function processMessageGeneric_(message, testMode, excludeLabel, excludeLabelNam
                   "cc: " + message.getCc() + "\r\n" +
                     "original ID: " + message.getId() + "\r\n" +
                       " Filter Text: " + RequestID + " " + orginalSenderID.replace(/\s+/g, '');
-    Logger.finest("body plain:" + bodyPlain);
+    doLogFinest("body plain:" + bodyPlain);
     */
     
     if (testMode)
@@ -254,50 +231,79 @@ function processMessageGeneric_(message, testMode, excludeLabel, excludeLabelNam
       return;
     }
     
-    if (replyMessage)
-    {
-      var referenceID = replyMessage.getId(); //not working: replyMessage.getThread().getId()
-      var labels = replyMessage.getThread().getLabels();
-      //labels.push(excludeLabel);
-            
-            
-      	var rawData= message.getRawContent();
-      	rawData = rawData.replace(' width="90%"','');
-      	rawData = replaceText_(rawData,'<body','>','<body>' +  headerline + "<br>--------------------------------------------------------------------------------------<br>\r\n");
-        rawData = replaceText_(rawData, 'Subject:','\n','Subject: ' + replyMessage.getSubject() + '\r\n');
-        rawData = replaceText_(rawData, 'References:','\n','References: ' + referenceID + '\r\n', 'Subject: ');
-        rawData = replaceText_(rawData, 'In-Reply-To:','\n','In-Reply-To: ' + referenceID + '\r\n', 'Subject: ');
-      	rawData = rawData.replace('</body>', HtmlAddtable+'</body>' );
+    var labels = message.getThread().getLabels();
+    var resp = undefined;
 
-        var resp = createMessage_(rawData, referenceID, labels); 
-      
-      	var newMessage = GmailApp.getMessageById(resp.id);
-      	newMessage.markUnread();
-      	newMessage.getThread().addLabel(excludeLabel);
-      	Logger.info("created mail in thread; mail id '" + resp.id + "' subject='" + newMessage.getSubject() + "' tothread=" + referenceID);
-      	Utilities.sleep(1000);
-          
-      	message.markRead();
-      	message.moveToTrash();           
+    var rawData= message.getRawContent();
+    rawData = rawData.replace(' width="90%"','');
+    rawData = replaceText_(rawData,'<body','>','<body>' +  headerline + "<br>--------------------------------------------------------------------------------------<br>\r\n");
+    var referenceID = undefined;
+
+    if (referenceID) {
+      //reply to Message
+      /*
+      var rmLabels = replyMessage.getThread().getLabels();
+      for (var lbl=0; lbl<rmLabels.length; lbl++)
+      {
+      labels.push(rmLabels[lbl]);
+      }*/
+      var referenceID = replyMessage.getId(); //not working: replyMessage.getThread().getId()
+
+    
+      rawData = replaceText_(rawData, 'References: ','\n','References: ' + referenceID + '\r\n', 'Subject: ');
+      rawData = replaceText_(rawData, 'In-Reply-To: ','\n','In-Reply-To: ' + referenceID + '\r\n', 'Subject: ');
+      rawData = replaceText_(rawData, 'Subject: ','\n','Subject: ' + replyMessage.getSubject() + '\r\n');
     }
     else
     {
-      	var rawData= message.getRawContent();
-      	rawData = rawData.replace(' width="90%"','');
-      	rawData = replaceText_(rawData,'<body','>','<body>' +  headerline + "<br>--------------------------------------------------------------------------------------<br>\r\n");
+      //rename Message;
         rawData = replaceText_(rawData, 'Subject:','\n','Subject: [' + RequestID + '] ' + subject + '\r\n');
-      	rawData = rawData.replace('</body>', HtmlAddtable+'</body>' );      
-      	var resp = createMessage_(rawData );
-      	var newMessage = GmailApp.getMessageById(resp.id);
-      	newMessage.markUnread();
-      	newMessage.getThread().addLabel(excludeLabel);
+    }
+
+    if (rawData.indexOf("</body>") > -1) {
+      rawData = rawData.replace('</body>', HtmlAddtable+'</body>' );
+    }
+    else
+    {
+      rawData = rawData + HtmlAddtable+'</body>';
+    }
+    
+    resp = createMessage_(rawData, referenceID, labels);
+    
+    if (referenceID)
+    {
+        resp = createMessage_(rawData, labels, referenceID); 
+    }
+    else
+    {
+      	resp = createMessage_(rawData, labels );
+    }    
+    
+    if (resp) {
+      var newMessage = GmailApp.getMessageById(resp.id);
+      newMessage.getThread().addLabel(excludeLabel);      
+
+      if (referenceID) {
+      	Logger.info("created mail in thread; mail id '" + resp.id + "' subject='" + newMessage.getSubject() + "' tothread=" + referenceID);
+      } else {
         Logger.info("created new mail; no other Message found; mail id '" + resp.id + "' subject='" + newMessage.getSubject());
-      	Utilities.sleep(1000);
-          
-      	message.markRead();
-      	message.moveToTrash();   
+      }
       
-      return;      
+      if (message.isInInbox()) {
+        newMessage.getThread().moveToInbox();
+      }
+      if (message.isStarred()) {
+        newMessage.star();
+      }      
+      if (message.isUnread()) {
+        newMessage.markUnread();
+      }
+      else {
+        newMessage.markRead();
+      }
+      Utilities.sleep(1000);
+      message.markRead();
+      message.moveToTrash();
     }
   }
 }
@@ -340,7 +346,7 @@ function formatSubject_(subject)
         }
       }
     }
-    //Logger.finest("subject change > " + subject);
+    //doLogFinest("subject change > " + subject);
   }
   return subject;
 }
@@ -358,7 +364,7 @@ function GetMessage_(searchQuery, excludeID, date, LogEnhancement)
 {  
   var threads = GmailApp.search(searchQuery);
   var cnt = threads.length;
-  Utilities.sleep(500);
+  Utilities.sleep(1000);
     
   for (var x=cnt-1; x>=0; x--)
   {  
@@ -366,19 +372,19 @@ function GetMessage_(searchQuery, excludeID, date, LogEnhancement)
     for (var y=0; y<messages.length; y++)
     { 
 /*
-      Logger.log("message Date:" + messages[y].getDate() + " valueOf=" +messages[y].getDate().valueOf());
-      Logger.log("correlation Date:" + date + " valueOf=" + date.valueOf());
-      Logger.log(messages[y].getDate().valueOf() < date.valueOf());
+      doLog("message Date:" + messages[y].getDate() + " valueOf=" +messages[y].getDate().valueOf());
+      doLog("correlation Date:" + date + " valueOf=" + date.valueOf());
+      doLog(messages[y].getDate().valueOf() < date.valueOf());
 */
 
       if (messages[y].getId() !== excludeID && messages[y].getDate().valueOf() < date.valueOf())
       {
-        Logger.finer("found " + cnt + " mails, used " + y + " message=" + messages[y].getId() + " of query: '" + searchQuery + "' - '" + LogEnhancement + "'");
+        doLogFiner("found " + cnt + " mails, used " + y + " message=" + messages[y].getId() + " of query: '" + searchQuery + "' - '" + LogEnhancement + "'");
         return messages[y];
       }
     }
   }
-  Logger.finer("no mail found for query: '" + searchQuery + "' - '" + LogEnhancement + "' result= " + cnt);
+  doLogFiner("no mail found for query: '" + searchQuery + "' - '" + LogEnhancement + "' result= " + cnt);
   return;
 }
 
@@ -394,7 +400,7 @@ function parseMessage_(bodyhtml,requestor)
   var dataArr = bodyhtml.split('<tr>');
   var customer = false;
     
-  //Logger.log(dataArr);
+  //doLog(dataArr);
   for (var i = 0; i < dataArr.length; i++)
   {
     var data = dataArr[i];
@@ -441,7 +447,7 @@ function parseMessage_(bodyhtml,requestor)
       addDomainLink = true;
       break;
     }
-    //Logger.log(addText);
+    //doLog(addText);
   }
   
   if (customer)
@@ -477,7 +483,7 @@ function TestNewFunction()
          '--1234567890123456789012345678--\n';
   
   var resp = createMessage_(raw, "14d7c37ad5ebb2e8" );  
-  Logger.log(JSON.stringify(resp));
+  doLog(JSON.stringify(resp));
 }
 */
 
@@ -523,7 +529,7 @@ function createDraft_() {
          '--1234567890123456789012345678--\n';
 
     var draftBody = Utilities.base64Encode(raw);
-    //Logger.log(draftBody);
+    //doLog(draftBody);
     
     var params = {method:"post",
                   contentType: "application/json",
@@ -537,7 +543,7 @@ function createDraft_() {
                  };
     
     var resp = UrlFetchApp.fetch("https://www.googleapis.com/gmail/v1/users/me/drafts", params);
-    Logger.log(resp.getContentText());
+    doLog(resp.getContentText());
   /*
    * sample resp: {
    *   "id": "r3322255254535847929",
@@ -550,11 +556,11 @@ function createDraft_() {
    */
     
   }catch(err){
-    Logger.log(err.lineNumber + ' - ' + err);
+    doLog(err.lineNumber + ' - ' + err);
   }
 }
 
-function createMessage_(raw, replyToMessageId, labelIDs)
+function createMessage_(raw, labelIDs, replyToMessageId)
 {
     var forScope = GmailApp.getInboxUnreadCount(); // needed for auth scope
 
@@ -564,10 +570,10 @@ function createMessage_(raw, replyToMessageId, labelIDs)
     var url = "https://www.googleapis.com/gmail/v1/users/me/messages";
   
   var     params = {method:"post",
-                    contentType: "application/json",
-                    headers: {"Authorization": "Bearer " + ScriptApp.getOAuthToken()},
-                    muteHttpExceptions:true
-                   };
+                  contentType: "application/json",
+                  headers: {"Authorization": "Bearer " + ScriptApp.getOAuthToken()},
+                  muteHttpExceptions:true
+                 };
 
   var payload = {};
   
@@ -585,8 +591,8 @@ function createMessage_(raw, replyToMessageId, labelIDs)
 
   params['payload'] = JSON.stringify(payload);
     
-    Logger.finest('url=' + url);
-    Logger.finest('params=' + JSON.stringify(params));
+    doLogFinest('url=' + url);
+    doLogFinest('params=' + JSON.stringify(params));
     
     var resp = UrlFetchApp.fetch(url, params);
   /*
@@ -595,24 +601,24 @@ function createMessage_(raw, replyToMessageId, labelIDs)
    * "threadId": "14d8f93685b8c197",
    * "labelIds": [ "CATEGORY_UPDATES", "Label_176" ]
    * }
-   */
-
-    var o  = JSON.parse(resp.getContentText());
+   */  
+    var respTxt = resp.getContentText();
+    var o  = JSON.parse(respTxt);
 
     if(o.error)
     {
-      Logger.warning('!! Error occured!! ----------------------------------------------------------');
-      Logger.info('threadid=' + replyToMessageId);
-      Logger.info('labelIDs=' + labelIDs);
-      Logger.finest('raw=' + raw);
-      Logger.info('url=' + url);
-      Logger.info('params=' + JSON.stringify(params));
-      Logger.info(resp.getContentText());
-      throw o.error.code + ":" +  o.error.message;
+      doLogWarning('!! Error occured!! ----------------------------------------------------------');
+      doLogInfo('threadid=' + replyToMessageId);
+      doLogInfo('labelIDs=' + labelIDs);
+      //dogInfo('raw=' + raw);
+      doLogInfo('url=' + url);
+      doLogInfo('params=' + JSON.stringify(params));
+      doLogInfo(respTxt);
+      throw new Error(o.error.code + ":" +  o.error.message);
     }
     else
     {
-      Logger.finer('new message id=' + o.id + " threadId=" + o.threadId);
+      doLogFiner('new message id=' + o.id + " threadId=" + o.threadId);
       return o;
     }
 }
