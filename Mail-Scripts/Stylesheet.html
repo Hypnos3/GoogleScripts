@@ -10,7 +10,6 @@
   
 <!-- Colours and Icons -->
 <link rel="stylesheet" href="https://storage.googleapis.com/code.getmdl.io/1.0.0/material.blue-amber.min.css" /> 
-<!-- link rel="stylesheet" href="https://storage.googleapis.com/code.getmdl.io/1.0.0/material.indigo-pink.min.css" -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
 <!-- icons see https://www.google.com/design/icons/   or   http://google.github.io/material-design-icons/
@@ -82,7 +81,7 @@ Usage: <i class="material-icons">face</i>
      your background is light. */
   color: white;
 }
-    
+  
     /* ToolTip Layouts */
     .ui-tooltip,
     .arrow:after {
@@ -149,6 +148,35 @@ Usage: <i class="material-icons">face</i>
       display: none;
     }
     
+  /* script-card Layouts */
+    .script-card.mdl-card {
+      margin-top: 1em;
+      margin-bottom: 1em;
+      margin-left: 1em;
+      margin-right: 2em;
+      width: 97%
+    }
+    
+    .script-card > .mdl-card__title {
+      color: #fff;
+      /* height: 176px; */
+      background: #3E4EB8;
+      /* background: url('../assets/demos/welcome_card.jpg') center / cover; */
+    }
+    
+    .script-card > .mdl-card__menu {
+      color: #fff;
+    }
+    
+    .script-card p {
+      margin: 1em;
+    }
+
+    .script-card small {
+      margin-left: 1em;
+    }
+  
+  /* scriptPart Layouts */
     .scriptPart {
       margin-top: 1em;
       margin-left: 1em;
@@ -244,7 +272,7 @@ Usage: <i class="material-icons">face</i>
   .custom-combobox {
     position: relative;
     display: inline-block;
-    margin-right: 30px;
+    margin-right: 45px;
   }
   
   .custom-combobox-toggle {
