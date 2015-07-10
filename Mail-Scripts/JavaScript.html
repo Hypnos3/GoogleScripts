@@ -1,0 +1,592 @@
+<!-- ---------------------------------------------------------------------------------------------------------------------------------------- -->
+<script src="https://apis.google.com/js/api.js?onload=onApiLoad"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
+
+<script>
+  /**
+   * Run initializations on web app load.
+   */
+  $(function() {
+  
+  /*
+    // Call the server here to retrieve any information needed to build the page.
+    google.script.run
+       .withSuccessHandler(function(contents) {
+            // Respond to success conditions here.
+            updateDisplay(contents);
+          })
+       .withFailureHandler(function(msg) {
+            // Respond to failure conditions here.
+            $('#main-heading').text(msg);
+            $('#main-heading').addClass("error");
+            $('#error-message').show();
+          })
+       .getFolderContents(folderId);
+       */
+  });
+
+  /**
+   * will be called on Failture.
+   *
+   * @param {Object} error object which should be displayed.
+   *
+   */
+    function onFailure(error) {
+      Logger.error("onFailure {0} error={1}",typeof error,error);
+      
+      var message;
+      if (typeof error == 'string') {
+          message = error;
+      } else {
+          message = error.message;
+      }
+      $("#submitButton").prop('disabled', false);
+      hideDialog();
+      alert('An Error occuded on Server Request! Server Response:' + message );
+      
+      showErrorDialog('An Error occuded!', '<p>The Server reported an Error for the last Request.</p><p>Server Response:' + message + '<p/>');
+    }
+    
+   /**
+   * will be called on Success.
+   *
+   * @param {String} text which should be displayed.
+   *
+   */
+   function onSuccess(text) {
+      Logger.log("onSuccess text={0}",text);
+      hideDialog();
+      if (text && text !== "") {
+        //alert('You have sucessfully send the Mail.\n\nRespose:\n' + text);
+        showOkDialog('All OK', '<p>Operation end OK.</p><br><p>Respose:<br>' + text + '</p>');
+      } else {
+        //alert('You have sucessfully send the Mail.');
+        showOkDialog('All OK', '<p>Operation end OK.</p>');
+      }
+      $("#submitButton").prop('disabled', false); //submitButton.disabled = false;
+      
+      //location.reload();
+      //window.location.reload();
+      
+      /*
+      if (!$('#testMail').is(':checked')) {
+        $("#main").hide();
+        $("#Done").show();
+        $("#Done").html(text + '<br /><br />');
+        google.script.host.close();
+      } else {
+        alert('You have sucessfully send the Mail.');
+      } */
+    }
+        
+   /**
+   * will be called on Success.
+   *
+   * @param {String} text which should be displayed.
+   *
+   */
+    function onCLose() {
+      google.script.host.close();
+    }
+    
+   /**
+   * will be called on Success.
+   *
+   * @param {String} text which should be displayed.
+   *
+   */
+    function onReset() {
+      Logger.log("onReset");
+
+      google.script.run
+        .withSuccessHandler(onSuccess)
+        .withFailureHandler(onFailure)
+        .resetContents();
+
+      $("#submitButton").prop('disabled', true);
+
+      showDialog("Bitte Warten...", '<p>Der Request wurde an den Server zur Bearbeitung gesendet und es dauert etwas bis dieser eine Rückantwort liefert.</p>');
+    }
+        
+   /**
+   * saves Form Data.
+   *
+   * @param {Object} contents of form
+   *
+   */
+  function onSave(contents) {
+      Logger.log("onSave contents={0}",contents);
+
+      google.script.run
+        .withSuccessHandler(onSuccess)
+        .withFailureHandler(onFailure)
+        .saveContents(contents);
+
+      $("#submitButton").prop('disabled', true);
+
+      showDialog("Bitte Warten...", '<p>Der Request wurde an den Server zur Bearbeitung gesendet und es dauert etwas bis dieser eine Rückantwort liefert.</p>');
+    }
+    
+    
+    
+    
+   /**
+   * saves Form Data.
+   *
+   * @param {Object} contents of form
+   *
+   */
+  function runScript(name) {
+      Logger.log("runScript name={0}",name);
+
+      google.script.run
+        .withSuccessHandler(onSuccess)
+        .withFailureHandler(onFailure)
+        .runScript(name);
+
+      $("#submitButton").prop('disabled', true);
+
+      showDialog("Bitte Warten...", '<p>Der Request wurde an den Server zur Bearbeitung gesendet und es dauert etwas bis dieser eine Rückantwort liefert.</p>');
+  }
+    
+  /**
+   * Updates display of folder contents.
+   *
+   * @param {Object} contents list of content filenames, along with
+   *     the root folder name.
+   */
+  function updateDisplay(contents) {
+    var headingText = "Displaying contents for " + contents.rootName + " folder:";
+    $('#main-heading').text(headingText);
+    for (var i = 0; i < contents.children.length; i++) {
+      var name = contents.children[i];
+      $('#results').append('<div>' + name + '</div>');
+    }
+  }
+
+  //--------------------------------------------------------------------------------------------------------------------------------------------------
+  // -- Logging
+  //--------------------------------------------------------------------------------------------------------------------------------------------------
+
+  //Converts an Argument to a string
+  function argumentToString_(arg) {
+      if (arg === null) {
+          return 'null';
+      }
+      else if (arg === undefined) {
+          return 'undefined';
+      }
+      else if (typeof arg == 'string' || arg instanceof String) {
+          return arg;
+      }
+      else {
+          try {
+              return JSON.stringify(arg, null, 2);
+          } catch (e) {
+              return arg;
+          }
+      }
+  }
+  
+  //Format a Log Entry
+  function formatLog_() {
+    var len = arguments.length;
+    if (len === 0) {
+      return;
+    }
+    var str = arguments[0];
+ 
+    // For each {0} {1} {n...} replace with the argument in that position.  If 
+    // the argument is an object or an array it will be stringified to JSON.
+    if (str.indexOf('{0}') >-1 || str.indexOf('{1}') >-1) {
+      for (var i=1; i < len; i++) {
+        str = str.replace(RegExp('\\{'+(i-1)+'\\}', 'g'), argumentToString_(arguments[i]));
+      }
+    } else {
+      for (var i=1; i < len; i++) {
+          str += "\n" + argumentToString_(arguments[i]);
+       }
+    }
+    return str;
+  }  
+  
+  //Logging Functions
+  var Logger = (function () {
+    return {
+         info: function() {
+             var message = formatLog_.apply(this, arguments);
+             console.log(message);
+            google.script.run
+                         .withFailureHandler(onFailure)
+                         .doLogWebService(
+                             {"log":"info",
+                              "caller":"js:"+arguments.callee.caller.name,
+                              "text": message});
+        },
+        log: function() {
+         var message = formatLog_.apply(this, arguments);
+             console.log(message);
+            google.script.run
+                         .withFailureHandler(onFailure)
+                         .doLogWebService(
+                             {"log":"info",
+                              "caller":"js:"+arguments.callee.caller.name,
+                              "text": message});
+        },
+        fine: function() {
+            var message = formatLog_.apply(this, arguments);
+            console.log(message);
+            google.script.run
+                         .withFailureHandler(onFailure)
+                         .doLogWebService(
+                             {"log":"fine",
+                              "caller":"js:"+arguments.callee.caller.name,
+                              "text": message});
+        },
+        finer: function() {
+            var message = formatLog_.apply(this, arguments);
+            console.log(message);
+            google.script.run
+                         .withFailureHandler(onFailure)
+                         .doLogWebService(
+                             {"log":"finer",
+                              "caller":"js:"+arguments.callee.caller.name,
+                              "text": message});
+        },
+        finest: function() {
+            var message = formatLog_.apply(this, arguments);
+            console.log(message);
+            google.script.run
+                         .withFailureHandler(onFailure)
+                         .doLogWebService(
+                             {"log":"finest",
+                              "caller":"js:"+arguments.callee.caller.name,
+                              "text": message});
+        },
+        warn: function() {
+            var message = formatLog_.apply(this, arguments);
+            console.warn(message);
+            google.script.run
+                         .withFailureHandler(onFailure)
+                         .doLogWebService(
+                             {"log":"warning",
+                              "caller":"js:"+arguments.callee.caller.name,
+                              "text": message});
+        },
+        warning: function() {
+            var message = formatLog_.apply(this, arguments);
+            console.warn(message);
+            google.script.run
+                         .withFailureHandler(onFailure)
+                         .doLogWebService(
+                             {"log":"warning",
+                              "caller":"js:"+arguments.callee.caller.name,
+                              "text": message});
+        },        
+        error: function() {
+            var message = formatLog_.apply(this, arguments);
+            console.error(message);
+            google.script.run
+                         .withFailureHandler(onFailure)
+                         .doLogWebService(
+                             {"log":"severe",
+                              "caller":"js:"+arguments.callee.caller.name,
+                              "text": message});
+        },
+        severe: function() {
+            var message = formatLog_.apply(this, arguments);
+            console.error(message);
+            google.script.run
+                         .withFailureHandler(onFailure)
+                         .doLogWebService(
+                             {"log":"severe",
+                              "caller":"js:"+arguments.callee.caller.name,
+                              "text": message});
+        }
+        }
+  }());
+      
+      //--------------------------------------------------------------------------------------------------------------------------------------------------
+      // -- JQuery Initialisation - Dialog
+      //--------------------------------------------------------------------------------------------------------------------------------------------------
+        $(function() {
+      $("#dialog").dialog({
+        dialogClass: "no-close",
+        modal: true,
+        autoOpen: false,
+        closeOnEscape: false,
+        show: {
+          effect: "blind",
+          duration: 300
+        },
+        hide: {
+          effect: "explode",
+          duration: 500
+        }
+      });
+    });
+
+
+  
+    function hideDialog(title, text) {
+      $("#dialog").dialog("close");
+    }
+
+    function showDialog(title, text) {
+      $("#dialog").dialog("option", "buttons", []);
+      $("#dialog").dialog("option", "closeOnEscape", false);
+      $("#dialog").html(text).dialog('option', 'title', title).dialog('open');
+    }
+
+    function showOkDialog(title, text) {
+      // Setter
+      // Icons: http://api.jqueryui.com/theming/icons/
+      $("#dialog").dialog("option", "buttons", [{
+        text: "Ok",
+        icons: {
+          primary: "ui-icon-check"
+        },
+        click: function() {
+            $(this).dialog("close");
+          }
+          // Uncommenting the following line would hide the text,
+          // resulting in the label being used as a tooltip
+          //showText: false
+      }]);
+
+      $("#dialog").dialog("option", "closeOnEscape", true);
+
+      $("#dialog").html(text).dialog('option', 'title', title).dialog('open');
+    }
+    
+    function showErrorDialog(title, text) {
+      // Setter
+      // Icons: http://api.jqueryui.com/theming/icons/
+      $("#dialog").dialog("option", "buttons", [{
+        text: "Ok",
+        icons: {
+          primary: "ui-icon-alert"
+        },
+        click: function() {
+            $(this).dialog("close");
+          }
+          // Uncommenting the following line would hide the text,
+          // resulting in the label being used as a tooltip
+          //showText: false
+      }]);
+
+      $("#dialog").dialog("option", "closeOnEscape", true);
+
+      $("#dialog").html(text).dialog('option', 'title', title).dialog('open');
+    }
+    
+    function showWarningDialog(title, text) {
+      // Setter
+      // Icons: http://api.jqueryui.com/theming/icons/
+      $("#dialog").dialog("option", "buttons", [{
+        text: "Ok",
+        icons: {
+          primary: "ui-icon-notice"
+        },
+        click: function() {
+            $(this).dialog("close");
+          }
+          // Uncommenting the following line would hide the text,
+          // resulting in the label being used as a tooltip
+          //showText: false
+      }]);
+
+      $("#dialog").dialog("option", "closeOnEscape", true);
+
+      $("#dialog").html(text).dialog('option', 'title', title).dialog('open');
+    }
+    
+    $(function() {
+      $(document).tooltip();
+    });
+    
+      //--------------------------------------------------------------------------------------------------------------------------------------------------
+      // -- add-row
+      //--------------------------------------------------------------------------------------------------------------------------------------------------
+    jQuery(function($){
+      var $addbutton = $('#add-row'),
+      $row = $('.saveMailPDF-row').clone();
+    
+      $addbutton.click(function(){
+        $row.clone().insertBefore( $addbutton );
+        
+        $( ".comboBox" ).combobox();
+        $( "#toggle" ).click(function() {
+            $( ".comboBox" ).toggle();
+        });
+      });
+    
+    });
+  
+    //<!-- ------------------------------------------------------------------------- -->
+    // Auto Complete
+    //<!-- ------------------------------------------------------------------------- -->
+
+    (function( $ ) {
+    $.widget( "custom.combobox", {
+      _create: function() {
+        this.wrapper = $( "<span>" )
+          .addClass( "custom-combobox" )
+          .insertAfter( this.element );
+          
+          var name = this.element.attr('name');
+          this.element.attr("name", '');
+          var title = this.element.attr('title');
+          
+        this.element.hide();
+        this._createAutocomplete(name, title);
+        this._createShowAllButton();
+      },
+ 
+      _createAutocomplete: function(name, title) {
+        var selected = this.element.children( ":selected" ),
+          value = selected.val() ? selected.text() : "";
+ 
+        this.input = $( "<input>" )
+          .appendTo( this.wrapper )
+          .val( value )
+          .attr( "title", title )
+          .attr("name", name)
+          .addClass( "custom-combobox-input ui-widget ui-widget-content ui-state-default ui-corner-left" )
+          .autocomplete({
+            delay: 0,
+            minLength: 0,
+            source: $.proxy( this, "_source" )
+          })
+          .tooltip({
+            tooltipClass: "ui-state-highlight"
+          });
+          
+        //this.input.val( $(select).find("option:selected").text());
+        this.input[0].defaultValue = value;
+ 
+        this._on( this.input, {
+          autocompleteselect: function( event, ui ) {
+            ui.item.option.selected = true;
+            this._trigger( "select", event, {
+              item: ui.item.option
+            });
+          },
+ 
+          autocompletechange: "_removeIfInvalid"
+        });
+      },
+ 
+      _createShowAllButton: function() {
+        var input = this.input,
+          wasOpen = false;
+ 
+        $( "<a>" )
+          .attr( "tabIndex", -1 )
+          .attr( "title", "Show All Items" )
+          .tooltip()
+          .appendTo( this.wrapper )
+          .button({
+            icons: {
+              primary: "ui-icon-triangle-1-s"
+            },
+            text: false
+          })
+          .removeClass( "ui-corner-all" )
+          .addClass( "custom-combobox-toggle ui-corner-right" )
+          .mousedown(function() {
+            wasOpen = input.autocomplete( "widget" ).is( ":visible" );
+          })
+          .click(function() {
+            input.focus();
+ 
+            // Close if already visible
+            if ( wasOpen ) {
+              return;
+            }
+ 
+            // Pass empty string as value to search for, displaying all results
+            input.autocomplete( "search", "" );
+          });
+      },
+ 
+      _source: function( request, response ) {
+        var matcher = new RegExp( $.ui.autocomplete.escapeRegex(request.term), "i" );
+        response( this.element.children( "option" ).map(function() {
+          var text = $( this ).text();
+          if ( this.value && ( !request.term || matcher.test(text) ) )
+            return {
+              label: text,
+              value: text,
+              option: this
+            };
+        }) );
+      },
+ 
+      _removeIfInvalid: function( event, ui ) {
+ 
+        // Selected an item, nothing to do
+        if ( ui.item ) {
+          return;
+        }
+ 
+        // Search for a match (case-insensitive)
+        var value = this.input.val(),
+          valueLowerCase = value.toLowerCase(),
+          valid = false;
+        this.element.children( "option" ).each(function() {
+          if ( $( this ).text().toLowerCase() === valueLowerCase ) {
+            this.selected = valid = true;
+            return false;
+          }
+        });
+ 
+        // Found a match, nothing to do
+        if ( valid ) {
+          return;
+        }
+ return;
+ 
+        // Remove invalid value
+        this.input
+          .val( "" )
+          .attr( "title", value + " didn't match any item" )
+          .tooltip( "open" );
+        this.element.val( "" );
+        this._delay(function() {
+          this.input.tooltip( "close" ).attr( "title", "" );
+        }, 2500 );
+        this.input.autocomplete( "instance" ).term = "";
+      },
+ 
+      _destroy: function() {
+        this.wrapper.remove();
+        this.element.show();
+      }
+    });
+  })( jQuery );
+ 
+  $(function() {
+    $( ".comboBox" ).combobox();
+    $( "#toggle" ).click(function() {
+      $( ".comboBox" ).toggle();
+    });
+  });
+  
+  //<!-- ------------------------------------------------------------------------- -->
+  // Checkbox
+  //<!-- ------------------------------------------------------------------------- -->
+var chk = $('input[type="checkbox"]');
+    chk.each(function(){
+        var v = $(this).attr('checked') == 'checked'?'true':'false';
+        $(this).after('<input type="hidden" name="'+$(this).attr('rel')+'" value="'+v+'" />');
+    });
+
+chk.change(function(){ 
+        var v = $(this).is(':checked')?'true':'false';
+        $(this).next('input[type="hidden"]').val(v);
+    });  
+    //<!-- ------------------------------------------------------------------------- -->
+
+</script>
