@@ -1,0 +1,268 @@
+<!-- This CSS package applies Google styling; it should always be included. -->
+<link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons.css">
+<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/dojo/1.7.8/dojo/resources/dojo.css" />
+<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/dojo/1.7.8/dijit/themes/tundra/tundra.css" />
+<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/themes/smoothness/jquery-ui.css" /> 
+  
+<!-- Font: https://www.google.com/fonts#UsePlace:use -->
+<link href='https://fonts.googleapis.com/css?family=Roboto:500,900,100,300,400' rel='stylesheet' type='text/css'>
+
+<!--
+  Icons: https://www.google.com/design/icons/
+         http://google.github.io/material-design-icons/
+-->
+
+
+<style>
+strong 
+{ 
+font-weight: bolder; 
+}
+
+* {
+      margin: 0;
+      padding: 0;
+    }
+    
+    html,
+    body,
+    #wrap {
+      height: 100%;
+      background: #CCCCCC;
+      font-family: 'Roboto', sans-serif;
+    }
+    
+    body > #wrap {
+      height: auto;
+      width: 80%;
+      min-height: 100%;
+      margin: 0 auto;
+      background: white;
+    }
+    
+    #main {
+      padding-bottom: 1.5em;
+    }
+    /* Muss genau so hoch sein wie der Footer */
+    
+    #header {
+      margin: 10;
+      padding: 0;
+      background: orange;
+      text-transform: uppercase;
+    }
+    
+    #footer {
+      position: relative;
+      margin-top: -1.5em;
+      /* Negativer Wert der Footer-Höhe */
+      
+      height: auto;
+      /* height: 1.5em; */
+      
+      clear: both;
+      background: #CCCCCC;
+    }
+    
+    #footerText {
+      font: 10px Tahoma, cursive;
+    }
+    
+    #Done {
+      font: 16px Tahoma, cursive;
+    }
+    /* generic elements */
+    
+    dl {
+      width: 100%;
+      overflow: hidden;
+    }
+    
+    dt {
+      float: left;
+      width: 25%;
+      /* adjust the width; make sure the total of both is 100% */
+    }
+    
+    dd {
+      float: left;
+      width: 75%;
+      /* adjust the width; make sure the total of both is 100% */
+    }
+    /* jquery Elements */
+    
+    .ui-tooltip,
+    .arrow:after {
+      background: black;
+      border: 2px solid white;
+    }
+    
+    .ui-tooltip {
+      padding: 10px 20px;
+      color: white;
+      border-radius: 20px;
+      /* font: bold 14px "Helvetica Neue", Sans-Serif; */
+      /* text-transform: uppercase; */
+      
+      box-shadow: 0 0 7px black;
+      font: 12px Tahoma, cursive;
+      max-width: 800px;
+    }
+    /* special elements */
+    
+    .requiredText {
+      color: #FF0000;
+      font-weight: bolder;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .optionalText {
+      color: #FF0000;
+      font-weight: bolder;
+      margin: 0;
+      padding: 0;
+    }
+
+.result-display {
+  margin-left: 15px;
+  font-size: 125%;
+}
+
+.error {
+  color: #FF0000;
+}
+
+.hidden {
+  display: none;
+}
+
+    *:required:invalid {
+      border: 1px solid red;
+      outline: none;
+    }
+  
+    *:required:focus:invalid {
+       box-shadow: 4px 4px 20px rgba(200, 0, 0, 0.85);
+    }
+    .validationText {
+      color: #FF0000;
+      font-weight: lighter;
+      background: yellow;
+    }
+    
+    .validationText:empty {
+      display: none;
+    }
+    
+    .scriptPart {
+      margin-top: 1em;
+      margin-left: 1em;
+      margin-right: 2em;
+      border: 1px solid black;
+    }
+    
+    .scriptPart p {
+      margin-top: 1em;
+      margin-left: 1em;
+      margin-right: 4em;
+    }
+
+    .scriptPartMax {
+        width: 100%;
+    }
+    
+    .scriptPartAddInfo {
+      font-size: 0.91em;
+      float: right;
+      width: 22em;
+      margin: 2em 0 1em 1em;
+      padding: 0;
+      border: 1px dashed silver;
+    }
+    
+    .listGroup {
+      text-align: left;
+      padding-left: 5px;
+      padding-right: 10px;
+    }
+    
+    .listElement {
+      text-align: left;
+      padding-left: 5px;
+      padding-right: 10px;
+    }
+    
+    .clearfix:after {
+      content: ".";
+      display: block;
+      height: 0;
+      clear: both;
+      visibility: hidden;
+    }
+    
+    .clearfix {
+      display: inline-block;
+    }
+    
+    .no-close .ui-dialog-titlebar-close {
+      display: none;
+    }
+    
+    .button,
+    button {
+      padding: 0;
+      min-width: 10px;
+    }
+    
+    input {
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    textarea#changes {
+      width: 100%;
+      display: block;
+      max-width: 100%;
+      padding: 5px;
+      /* padding:5px 5px 10px; */
+      /* line-height:1.5; */
+      
+      border-radius: 3px;
+      /* border:1px solid #F7E98D; */
+      
+      font: 13px Tahoma, cursive;
+      transition: box-shadow 0.5s ease;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      font-smoothing: subpixel-antialiased;
+      /*	background:linear-gradient(#F9EFAF, #F7E98D);
+	background:-o-linear-gradient(#F9EFAF, #F7E98D);
+	background:-ms-linear-gradient(#F9EFAF, #F7E98D);
+	background:-moz-linear-gradient(#F9EFAF, #F7E98D);
+	background:-webkit-linear-gradient(#F9EFAF, #F7E98D); */
+    }
+    
+    textarea.noscrollbars {
+      overflow: hidden;
+      width: 300px;
+      height: 80px;
+    }
+
+  .custom-combobox {
+    position: relative;
+    display: inline-block;
+    margin-right: 30px;
+  }
+  
+  .custom-combobox-toggle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    margin-left: -1px;
+    padding: 0;
+  }
+  .custom-combobox-input {
+    margin: 0;
+    padding: 5px 10px;
+  }
+scriptAddInfo
+</style>
