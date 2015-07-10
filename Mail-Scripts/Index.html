@@ -2,19 +2,41 @@
 <?!= HtmlService.createHtmlOutputFromFile('Stylesheet').getContent(); ?>
 <html>
   <body>
-    <div id="header">
-      <h1><? if (testMode) { ?>TESTMODE: <? } ?>Mailscripts by Robert Gester </h1>
+    <form id="form" action="" method="POST" target="_self">
+<!-- Simple header with scrollable tabs. -->
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+  <header class="mdl-layout__header">
+    <div class="mdl-layout__header-row">
+      <!-- Title -->
+      <span class="mdl-layout-title"><? if (testMode) { ?>TESTMODE: <? } ?>Mailscripts by Robert Gester</span>
     </div>
-    <div id="main" class="clearfix">
-      <div id="form">
-        <form id="form" action="" method="POST" target="_self">
-          <p class="requiredText">* Required Fields</p>
-          <? if (testMode) { ?>
-          <p class="requiredText">TESTMODE: not released!</p>
-          <? } ?>
-
-<!-- -------------------------------------------------------------------------------------------------------------------- -->
-          <!-- div class="scriptPartAddInfo" id="saveImageAttachments" title="">Save Image Attachments to Google Drive</div -->
+    <!-- Tabs -->
+    <div class="mdl-layout__tab-bar mdl-js-ripple-effect">
+      <a href="#scroll-tab-1" class="mdl-layout__tab is-active">Save Mail Images</a>
+      <a href="#scroll-tab-2" class="mdl-layout__tab">Save Mails as PDF</a>
+      <a href="#scroll-tab-3" class="mdl-layout__tab">Archive Old Mails</a>
+      <a href="#scroll-tab-4" class="mdl-layout__tab">Delete old Mails</a>
+      <a href="#scroll-tab-5" class="mdl-layout__tab">Rename Mails</a>
+    </div>
+  </header>  
+  <div class="mdl-layout__drawer">
+    <span class="mdl-layout-title">Mailscripts</span>
+    <nav class="mdl-navigation">
+      <a class="mdl-navigation__link" onClick="onSave(this.form)">Save <i class="material-icons">save</i></a>
+      <a class="mdl-navigation__link" href="" onclick="onReset()">ResetAll <i class="material-icons">clear_all</i></a>
+      <? if (canClose) { ?>
+        <a class="mdl-navigation__link" href="">Close <i class="material-icons">close</i></a>
+      <? } ?>
+        
+      <a class="mdl-navigation__link" href="mailto:robert.gester@globalfoundries.com">Mail <i class="material-icons">mail</i></a>
+    </nav>
+  </div>
+          
+  <main class="mdl-layout__content">
+<!-- -------------------------------------------------------------------------------------------------------------------- -->  
+    <section class="mdl-layout__tab-panel is-active" id="scroll-tab-1">
+      <div class="page-content">
+       <!-- div class="scriptPartAddInfo" id="saveImageAttachments" title="">Save Image Attachments to Google Drive</div -->
           <div class="scriptPartAddInfo" id="saveMailImages" title="">
               <a href="javascript:runScript('saveMailImages')">run script saveMailImages</a>        
           </div>
@@ -64,8 +86,13 @@
 				<input class="scriptPartMax" name="saveMailImagesSearch" id="saveMailImagesSearch" type="text" value="<?=userData.saveMailImagesSearch?>" /></label>
           	</p>          
           </div>
-
-<!-- -------------------------------------------------------------------------------------------------------------------- -->
+          <p />
+          
+      </div>
+    </section>
+<!-- -------------------------------------------------------------------------------------------------------------------- -->    
+    <section class="mdl-layout__tab-panel" id="scroll-tab-2">
+      <div class="page-content">
           <div class="scriptPartAddInfo" id="saveMailPDF" title="">
               <a href="javascript:runScript('saveMailPDF')">run script saveMailPDF</a>        
           </div>
@@ -76,9 +103,9 @@
                 <label>Activated<span class="requiredText">*</span>
                   <input rel="saveMailPDFActive" Title="Activate or deactivate the automated running of this Script." type="checkbox" <? if (userData.saveMailPDFActive === 'true') { ?>checked<? } ?> />
                 </label><small>If activated this script would automatically started every 5 minutes.</small><br>
-                
-				<fieldset id="saveMailPDF-row" name="saveMailPDFItems">
-    			  <legend>Entries</legend>
+            </p>  
+			<fieldset id="saveMailPDF-row" name="saveMailPDFItems">
+    		  <legend>Entries</legend>
                   <?
                     var items = JSON.parse(userData.saveMailPDFItems);
                     var item = items[0];
@@ -197,11 +224,15 @@
                   <? } ?>
                   <input type="button" id="add-row" name="add-row" value="Add row" />
                 </fieldset>                
-          	 </p>          
           </div>
+                <p />
 
-<!-- -------------------------------------------------------------------------------------------------------------------- -->
-          <div class="scriptPartAddInfo" id="saveOldMail" title="">
+      </div>
+    </section>
+<!-- -------------------------------------------------------------------------------------------------------------------- -->    
+    <section class="mdl-layout__tab-panel" id="scroll-tab-3">
+      <div class="page-content">
+<div class="scriptPartAddInfo" id="saveOldMail" title="">
               <a href="javascript:runScript('saveOldMail')">run script saveOldMail</a>        
           </div>
           <div class="scriptPart">
@@ -239,9 +270,14 @@
 				<input class="scriptPartMax" name="saveOldMailPDFSearch" id="saveOldMailPDFSearch" type="text" value="<?=userData.saveOldMailPDFSearch?>"  /></label>
           	</p>          
 
-          </div>
+          </div>      
+             <p />
 
-<!-- -------------------------------------------------------------------------------------------------------------------- -->
+      </div>
+    </section>
+<!-- -------------------------------------------------------------------------------------------------------------------- -->    
+    <section class="mdl-layout__tab-panel" id="scroll-tab-4">
+      <div class="page-content">
           <div class="scriptPartAddInfo" id="deleteOldMail" title="">
               <a href="javascript:runScript('deleteOldMail')">run script deleteOldMail</a>        
           </div>
@@ -257,9 +293,13 @@
 				<input class="scriptPartMax" name="deleteOldMailSearchQuery" id="deleteOldMailSearchQuery" type="text" value="<?=userData.deleteOldMailSearchQuery?>"  /></label>
           	</p>          
 
-          </div>
-
-<!-- -------------------------------------------------------------------------------------------------------------------- -->
+          </div>      
+         <p />
+      </div>
+    </section>
+<!-- -------------------------------------------------------------------------------------------------------------------- -->    
+    <section class="mdl-layout__tab-panel" id="scroll-tab-5">
+      <div class="page-content">
           <div class="scriptPartAddInfo" id="renameMail" title="">
               <a href="javascript:runScript('renameMail')">run script renameMail</a>        
           </div>
@@ -287,21 +327,23 @@
             	</select> All Mails which are processed get this Label.</label><br>
 
                 <label>Label for Mails with error during processing: 
-				<select id="renameMailLabelError" class="comboBox" name="renameMailLabelError" required>
-                  <? if (userData.renameMailLabelError) { ?>
-                      <option class="listElement" value="<?=userData.renameMailLabelError ?>" selected ><?=userData.renameMailLabelError ?></option>
-                  <? }
-                    for (var i=0 ; i < labels.length; i++) { ?>
-                    <? if (labels[i] !== userData.renameMailLabelError) { ?>
-                      <option class="listElement" value="<?=labels[i]?>"   ><?=labels[i] ?></option>
-                    <? } } ?>
-                
-            	</select></label><br>
+                  <select id="renameMailLabelError" class="comboBox" name="renameMailLabelError" required>
+                    <? if (userData.renameMailLabelError) { ?>
+                        <option class="listElement" value="<?=userData.renameMailLabelError ?>" selected ><?=userData.renameMailLabelError ?></option>
+                    <? }
+                      for (var i=0 ; i < labels.length; i++) { ?>
+                      <? if (labels[i] !== userData.renameMailLabelError) { ?>
+                        <option class="listElement" value="<?=labels[i]?>"   ><?=labels[i] ?></option>
+                      <? } } ?>
+                  </select>
+                </label><br>
             	
 
-                <label>Extractor for ID from Mail subject:
-				<input class="scriptPartMax" name="renameMailIDRegex" id="renameMailIDRegex" type="text" value="<?=userData.renameMailIDRegex?>" />
+                <!-- 
+                <label>Extractor for ID from Mail subject:				
+                <input class="scriptPartMax" name="renameMailIDRegex" id="renameMailIDRegex" type="text" value="< ?  =userData.renameMailIDRegex ? >" />
                 </label><a href="https://regex101.com/#javascript" target="_blank">RegEx Help and Tester</a> <br>
+                -->
 
                 <label>Google Mail Search Pattern Enhancements:
 				<input class="scriptPartMax" name="renameMailSearchQueryV2" id="renameMailSearchQueryV2" type="text" value="<?=userData.renameMailSearchQueryV2 ?>" /> All Mails with label processed and label error will be excluded automatically from search.
@@ -313,42 +355,64 @@
 
           	</p>          
 
-          </div>
+          </div>      
+          <p />
+      </div> <!-- class="page-content" -->
+    </section> <!-- class="mdl-layout__tab-panel" -->
+<!-- -------------------------------------------------------------------------------------------------------------------- -->    
 
-<!-- -------------------------------------------------------------------------------------------------------------------- -->
-          <hr />          
-          <!-- Hidden input Fields -->
-          <? if (testMode) { ?>
-          <input type="hidden" id="testMode" name="testMode" value="true">
-          <? } ?>
-
-          <table id="buttonsTable">
-            <tbody>
-              <tr>
-                <td class="ss-form-entry goog-inline-block" id="navigation-buttons" dir="ltr">
-                  <input type="button" id="submitButton" value="Save" onClick="onSave(this.form)" />
-                  <input type="button" id="resetButton" value="ResetAll" onclick="onReset()" />
-                  <? if (canClose) { ?>
-                  <input type="button" id="cancelButton" value="Cancel" onclick="onClose()" />
-                  <? } ?>
-                  <? if (testMode) { ?>
+<!-- -------------------------------------------------------------------------------------------------------------------- -->    
+<footer class="mdl-mini-footer">
+  <div class="mdl-mini-footer--left-section">
+    <div class="mdl-logo">Submit Changes: </div>
+    
+    <div class="mdl-mini-footer--left-section">
+      <button id="submitButton" onClick="onSave(this.form)" class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect" >Save
+        <i class="material-icons">save</i>
+      </button>
+      
+      Reset all Inputs in all Tabs to default
+      <button id="resetButton" value="ResetAll" onclick="onReset()" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" >Reset
+        <i class="material-icons">clear_all</i>
+      </button>
+       
+       <? if (canClose) { ?>
+         <button id="cancelButton" value="Cancel" onclick="onClose()" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect">Close
+           <i class="material-icons">close</i>
+         </button>
+       <? } ?>
+       
+       <? if (testMode) { ?>
                   <!--
                           <input type="button" id="testButton" value="showDialog" onclick="showDialog('my title 1','<p>the first text</p>')" />
                           <input type="button" id="testButton" value="showOkDialog" onclick="showOkDialog('my title 1','<p>the first text</p>')" />
                           <input type="button" id="testButton" value="processingMailData" onclick="processingMailData()" />
                   -->
-                  <? } ?>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <hr />
-        </form>
-      </div> <!-- div id="form" -->
-      </div> <!-- id="main" -->
+       <? } ?>
+    </div>
+    <div class="mdl-mini-footer--right-section">
+        <ul class="mdl-mini-footer--link-list">
+          <li><p class="requiredText">* Required Fields</p></li>
+          <li><a href="mailto:robert.gester@globalfoundries.com">Mail <i class="material-icons">mail</i></a></li>
+          <li>      <!-- Hidden input Fields -->
+      <? if (testMode) { ?>
+        <input type="hidden" id="testMode" name="testMode" value="true">
+      <? } ?></li>
+        </ul>
+
+    </div>
+  </div>
+</footer>
+
+<!-- -------------------------------------------------------------------------------------------------------------------- -->
+
+<!-- -------------------------------------------------------------------------------------------------------------------- -->
+  </main> <!-- mdl-layout__content -->
+</div>    
     <div id="dialog" title="Bitte Warten...">
       <p>Der Request wurde an den Server zur Bearbeitung gesendet und es dauert etwas bis dieser eine Rückantwort liefert.</p>
     </div>
+</form>
   </body>
 </html>
 
