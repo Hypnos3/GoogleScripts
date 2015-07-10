@@ -11,13 +11,13 @@
       <span class="mdl-layout-title"><? if (testMode) { ?>TESTMODE: <? } ?>Mailscripts by Robert Gester</span>
     </div>
     <!-- Tabs -->
-    <div class="mdl-layout__tab-bar mdl-js-ripple-effect">
+    <!-- div class="mdl-layout__tab-bar mdl-js-ripple-effect">
       <a href="#scroll-tab-1" class="mdl-layout__tab is-active">Save Mail Images</a>
       <a href="#scroll-tab-2" class="mdl-layout__tab">Save Mails as PDF</a>
       <a href="#scroll-tab-3" class="mdl-layout__tab">Archive Old Mails</a>
       <a href="#scroll-tab-4" class="mdl-layout__tab">Delete old Mails</a>
       <a href="#scroll-tab-5" class="mdl-layout__tab">Rename Mails</a>
-    </div>
+    </div -->
   </header>  
   <div class="mdl-layout__drawer">
     <span class="mdl-layout-title">Mailscripts</span>
@@ -33,22 +33,20 @@
   </div>
           
   <main class="mdl-layout__content">
+    <div class="page-content">
 <!-- -------------------------------------------------------------------------------------------------------------------- -->  
-    <section class="mdl-layout__tab-panel is-active" id="scroll-tab-1">
-      <div class="page-content">
-       <!-- div class="scriptPartAddInfo" id="saveImageAttachments" title="">Save Image Attachments to Google Drive</div -->
-          <div class="scriptPartAddInfo" id="saveMailImages" title="">
-              <a href="javascript:runScript('saveMailImages')">run script saveMailImages</a>        
-          </div>
-          <div class="scriptPart">
-          	<strong>Save Mail Images to Google Drive</strong><br>
-          	Allows to save all Images to Google Drive to be able to search Text inside the Images by using Google Drive OCR.<br>
-          	<p>
-                <label>Activated<span class="requiredText">*</span>
-                  <input rel="saveMailImagesActive" Title="Activate or deactivate the automated running of this Script." type="checkbox" <? if (userData.saveMailImagesActive === 'true') { ?>checked<? } ?> />
-                </label><small>If activated this script would automatically started every 5 minutes.</small><br>
-                
-                <label>Google Drive Folder:
+      <div class="script-card mdl-card  mdl-shadow--4dp">
+        <div class="mdl-card__title">
+          <h2 class="mdl-card__title-text">Save Mail Images to Google Drive</h2>
+        </div>  
+        
+        <div class="mdl-card__supporting-text">
+          Allows to save all Images to Google Drive to be able to search Text inside the Images by using Google Drive OCR.
+        </div>
+        
+        <div class="mdl-card__media">
+          <p>
+                <i class="material-icons" title="Google Drive Folder">folder</i>
 				<!-- input name="saveMailImagesDriveFolder" id="saveMailImagesDriveFolder" type="text" value="<?=userData.saveMailImagesDriveFolder?>" /></label><br -->
 				<select id="saveMailImagesDriveFolder" Title="All Images would be saved to this Folder." class="comboBox" name="saveMailImagesDriveFolder" required>
                   <? if (userData.saveMailImagesDriveFolder) { ?>
@@ -58,9 +56,10 @@
                     <? if (folders[i] !== userData.saveMailImagesDriveFolder) { ?>
                       <option class="listElement" value="<?=folders[i]?>"   ><?=folders[i] ?></option>
                     <? } } ?>
-            	</select> <small>All Images would be saved to this Folder.</small></label><br>
+            	</select> <small>All Images would be saved to this Folder.</small><br>
 
-                <label>Label for processed Mails: 
+                <i class="material-icons" title="Google Mail Label for processed Mails">label</i>
+                processed Mails: 
 				<select id="saveMailImagesLabelProcessed" Title="All Mails which are processed get this Label." class="comboBox" name="saveMailImagesLabelProcessed" required>
                   <? if (userData.saveMailImagesLabelProcessed) { ?>
                       <option class="listElement" value="<?=userData.saveMailImagesLabelProcessed ?>" selected ><?=userData.saveMailImagesLabelProcessed ?></option>
@@ -69,9 +68,9 @@
                     <? if (labels[i] !== userData.saveMailImagesLabelProcessed) { ?>
                       <option class="listElement" value="<?=labels[i]?>"   ><?=labels[i] ?></option>
                     <? } } ?>
-            	</select> <small>All Mails which are processed get this Label.</small></label><br>
+            	</select> <small>All Mails which are processed get this Label.</small><br>
             	
-            	<label>Label for skipped Mails:
+            	<i class="material-icons" title="Google Mail Label for skipped Mails">label_outline</i> skipped Mails:
 				<select id="saveMailImagesLabelSkipped" Title="All Mails which are skipped get this Label." class="comboBox" name="saveMailImagesLabelSkipped" required>
                   <? if (userData.saveMailImagesLabelSkipped) { ?>
                       <option class="listElement" value="<?=userData.saveMailImagesLabelSkipped ?>" selected ><?=userData.saveMailImagesLabelSkipped ?></option>
@@ -80,30 +79,39 @@
                     <? if (labels[i] !== userData.saveMailImagesLabelSkipped) { ?>
                       <option class="listElement" value="<?=labels[i]?>"   ><?=labels[i] ?></option>
                     <? } } ?>
-            	</select> <small>All Mails which are skipped get this Label.</small></label><br>
+            	</select> <small>All Mails which are skipped get this Label.</small><br>
 
-                <label>Google Mail Search Pattern:
-				<input class="scriptPartMax" name="saveMailImagesSearch" id="saveMailImagesSearch" type="text" value="<?=userData.saveMailImagesSearch?>" /></label>
+                <i class="material-icons" title="Google Mail Search Pattern">find_in_page</i>Google Mail Search Pattern:
+				<input class="scriptPartMax" name="saveMailImagesSearch" id="saveMailImagesSearch" type="text" value="<?=userData.saveMailImagesSearch?>" />
           	</p>          
-          </div>
-          <p />
-          
+       </div>
+       
+       <div class="mdl-card__actions mdl-card--border">
+         <label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="saveMailImagesActive" title="Activate or deactivate the automated running of this Script. Please don't forget to save changes at bottom of this page!">
+           <input rel="saveMailImagesActive" class="mdl-checkbox__input" type="checkbox" id="saveMailImagesActive" <? if (userData.saveMailImagesActive === 'true') { ?>checked<? } ?> />
+           <span class="mdl-checkbox__label">Activated</span>
+           <small>If activated this script would automatically started every 5 minutes.</small>
+         </label>
+         <!-- a href="javascript:runScript('saveMailImages')"><i class="material-icons">directions_run</i> start for testing</a --> 
+       </div>
+       
+        <div class="mdl-card__menu">
+          <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect" title="start sript for testing" onClick="javascript:runScript('saveMailImages')"><i class="material-icons">directions_run</i></button>
+        </div>
+  
       </div>
-    </section>
 <!-- -------------------------------------------------------------------------------------------------------------------- -->    
-    <section class="mdl-layout__tab-panel" id="scroll-tab-2">
-      <div class="page-content">
-          <div class="scriptPartAddInfo" id="saveMailPDF" title="">
-              <a href="javascript:runScript('saveMailPDF')">run script saveMailPDF</a>        
-          </div>
-          <div class="scriptPart">
-          	<strong>Save Mails as PDF to Google Drive</strong><br>
-          	Allows to save Mails as PDF to Google Drive including Attachments, etc...<br>
+      <div class="script-card mdl-card  mdl-shadow--4dp">
+        <div class="mdl-card__title">
+          <h2 class="mdl-card__title-text">Save Mails as PDF to Google Drive</h2>
+        </div>      
+        <div class="mdl-card__supporting-text">
+          Allows to save Mails as PDF to Google Drive including Attachments, etc...
+        </div>
+        
+        <div class="mdl-card__media">
           	<p>
-                <label>Activated<span class="requiredText">*</span>
-                  <input rel="saveMailPDFActive" Title="Activate or deactivate the automated running of this Script." type="checkbox" <? if (userData.saveMailPDFActive === 'true') { ?>checked<? } ?> />
-                </label><small>If activated this script would automatically started every 5 minutes.</small><br>
-            </p>  
+
 			<fieldset id="saveMailPDF-row" name="saveMailPDFItems">
     		  <legend>Entries</legend>
                   <?
@@ -111,7 +119,7 @@
                     var item = items[0];
                   ?>    
                   <div class="saveMailPDF-row">
-				    <label>Label: 
+                    <i class="material-icons" title="Google Mail Label">label</i>
 				      <select name="saveMailPDFItems[label]" id="saveMailPDFLabel" Title="All Mails which are should processed. Label would be removed after sucessfull processing. Use Filters to add this Label automatic to incomming Mails." class="comboBox" required>
                   <? if (item.label) { ?>
                       <option class="listElement" value="<?=item.label ?>" selected ><?=item.label ?></option>
@@ -122,9 +130,9 @@
                     <? } } ?>
 
             	      </select>
-                    </label>
+                   
 
-            	    <label>Drive Folder:
+            	    <i class="material-icons" title="Google Drive Folder">folder</i>
 				      <!-- input name="saveMailPDFItems[folder]" type="text" value="<?=item.folder?>" /></label -->
                       <select name="saveMailPDFItems[folder]" Title="Google Drive Folder where the files should be stored." class="comboBox" required>
                         <? if (userData.saveMailImagesDriveFolder) { ?>
@@ -135,18 +143,14 @@
                             <option class="listElement" value="<?=folders[i]?>"   ><?=folders[i] ?></option>
                         <? } } ?>
                       </select>
-                    </label>
                       
-
-            	    <label>mail body:
+                      <i class="material-icons" title="Mail Body as PDF">mail</i>
 				      <input rel="saveMailPDFItems[mailBody]" Title="Check if body of mail should saved to Google Drive." type="checkbox" <? if (item.mailBody === 'true') { ?>checked<? } ?> />
-				    </label>
 
-            	    <label>Attachment:
+                      <i class="material-icons" title="Mail Body Attachments">attachment</i>
 				      <input rel="saveMailPDFItems[mailAttachment]" Title="Check if all mail attachments of mail should saved to Google Drive." type="checkbox" <? if (item.mailAttachment === 'true') { ?>checked<? } ?> />
-				    </label>
 				
-                    <label>Label processed Mails: 
+                      <i class="material-icons"  title="Assign all processed Mails a Google Mail Label">label_outline</i>                      
 				      <select name="saveMailPDFItems[labelProcessed]" Title="All Mails which are processed get this Label. Could be empty if processed mails should get no label." class="comboBox"  >
                   <? if (item.labelProcessed) { ?>
                       <option class="listElement" value="<?=item.labelProcessed ?>" selected ><?=item.labelProcessed ?></option>
@@ -158,9 +162,11 @@
                       <option class="listElement" value="<?=labels[i]?>"   ><?=labels[i] ?></option>
                     <? } } ?>                        
             	      </select>
-                    </label>
-
-                    <input type="button" id="remove-row" name="remove-row" value="delete" onClick='$(this).parent().remove();' />
+                    
+                    <button type="button" id="remove-row" name="remove-row" value="delete" onclick="$(this).parent().remove();" class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-js-ripple-effect">
+                       <i class="material-icons">remove</i>
+                    </button>                    
+                    
 		          </div>
                   
                   <?
@@ -171,7 +177,7 @@
     
                   ?>
 				  <div class="row">
-				    <label>Label: 
+				    <i class="material-icons" title="Google Mail Label">label</i>
 				      <select id="saveMailPDFLabel" name="saveMailPDFItems[label]" Title="All Mails which are should processed. Label would be removed after sucessfull processing. Use Filters to add this Label automatic to incomming Mails." class="comboBox" required>
                   <? if (item.label) { ?>
                       <option class="listElement" value="<?=item.label ?>" selected ><?=item.label ?></option>
@@ -182,9 +188,8 @@
                     <? } } ?>
 
             	      </select>
-                    </label>
 
-            	    <label>Drive Folder:
+            	    <i class="material-icons" title="Google Drive Folder">folder</i>
 				      <!-- input name="saveMailPDFItems[folder]" type="text" value="<?=item.folder?>" /></label -->
                       <select name="saveMailPDFItems[folder]" Title="Google Drive Folder where the files should be stored." class="comboBox" required>
                         <? if (userData.saveMailImagesDriveFolder) { ?>
@@ -195,17 +200,17 @@
                             <option class="listElement" value="<?=folders[i]?>"   ><?=folders[i] ?></option>
                         <? } } ?>
                       </select>
-                    </label>                    
+                                      
 
-            	    <label>mail body:
+            	    <i class="material-icons" title="Mail Body as PDF">mail</i>
 				      <input rel="saveMailPDFItems[mailBody]" Title="Check if body of mail should saved to Google Drive." type="checkbox" <? if (item.mailBody === 'true') { ?>checked<? } ?> />
-				    </label>
+				    
 
-            	    <label>Attachment:
+            	    <i class="material-icons" title="Mail Body Attachments">attachment</i>
 				      <input rel="saveMailPDFItems[mailAttachment]" Title="Check if all mail attachments of mail should saved to Google Drive." type="checkbox" <? if (item.mailAttachment === 'true') { ?>checked<? } ?> />
-				    </label>
+				    
 				
-                    <label>Label processed Mails: 
+                    <i class="material-icons"  title="Assign all processed Mails a Google Mail Label">label_outline</i>
 				      <select class="comboBox" Title="All Mails which are processed get this Label. Could be empty if processed mails should get no label." name="saveMailPDFItems[labelProcessed]" >
                   <? if (item.labelProcessed) { ?>
                       <option class="listElement" value="<?=item.labelProcessed ?>" selected ><?=item.labelProcessed ?></option>
@@ -216,35 +221,50 @@
                     <? if (labels[i] !== item.label) { ?>
                       <option class="listElement" value="<?=labels[i]?>"   ><?=labels[i] ?></option>
                     <? } } ?>                        
-            	      </select>
-                    </label>
+            	      </select>                    
 
-                    <input type="button" id="remove-row" name="remove-row" value="delete" onClick='$(this).parent().remove();' />
+                    <button type="button" id="remove-row" name="remove-row" value="delete" onclick="$(this).parent().remove();" class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-js-ripple-effect">
+                       <i class="material-icons">remove</i>
+                    </button>                    
+                    
 		          </div>
                   <? } ?>
-                  <input type="button" id="add-row" name="add-row" value="Add row" />
-                </fieldset>                
-          </div>
-                <p />
+                </fieldset> 
+                <!-- input type="button" id="add-row" name="add-row" value="Add row" /-->
 
+                <button onclick="addRowButton(this);"  class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-js-ripple-effect" type="button">
+                  <i class="material-icons">add</i>
+                </button>
+          <p />
+       </div>
+
+       <div class="mdl-card__actions mdl-card--border">
+         <label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="saveMailPDFActive" title="Activate or deactivate the automated running of this Script. Please don't forget to save changes at bottom of this page!">
+           <input rel="saveMailPDFActive" class="mdl-checkbox__input" type="checkbox" id="saveMailPDFActive" <? if (userData.saveMailPDFActive === 'true') { ?>checked<? } ?> />
+           <span class="mdl-checkbox__label">Activated</span>
+           <small>If activated this script would automatically started every 5 minutes.</small>
+         </label>
+         <!-- a href="javascript:runScript('saveMailPDF')"><i class="material-icons">directions_run</i> start for testing</a --> 
+       </div>
+            
+        <div class="mdl-card__menu">
+          <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect" title="start sript for testing" onClick="javascript:runScript('saveMailPDF')"><i class="material-icons">directions_run</i></button>
+        </div>
+  
       </div>
-    </section>
 <!-- -------------------------------------------------------------------------------------------------------------------- -->    
-    <section class="mdl-layout__tab-panel" id="scroll-tab-3">
-      <div class="page-content">
-<div class="scriptPartAddInfo" id="saveOldMail" title="">
-              <a href="javascript:runScript('saveOldMail')">run script saveOldMail</a>        
-          </div>
-          <div class="scriptPart">
-          	<strong>Old Mails archiving as PDF to Google Drive</strong><br>
-          	Allows to save old Mails as PDF to Google Drive including Attachments, etc...<br>
+      <div class="script-card mdl-card  mdl-shadow--4dp">
+        <div class="mdl-card__title">
+          <h2 class="mdl-card__title-text">Old Mails archiving as PDF to Google Drive</h2>
+        </div>  
+        
+        <div class="mdl-card__supporting-text">
+          Allows to save old Mails as PDF to Google Drive including Attachments, etc...
+        </div>
+
+        <div class="mdl-card__media">
           	<p>
-              <label>Activate old Mail archiving<span class="requiredText">*</span>
-                <input rel="saveOldMailPDFActive" Title="Activate or deactivate the automated running of this Script." type="checkbox" <? if (userData.saveOldMailPDFActive === 'true') { ?>checked<? } ?> />
-              </label><small>If activated this script would automatically started every 1. of month.</small><br>
-          	  
-              <label>Google Drive Folder to save old Mails:
-				<!-- input name="saveOldMailPDFFolder" id="saveOldMailPDFFolder" type="text" value="<?=userData.saveOldMailPDFFolder?>" /></label><br -->
+              <i class="material-icons" title="Google Drive Folder to save old Mail">folder</i>
 				<select id="saveOldMailPDFFolder" name="saveOldMailPDFFolder" class="comboBox" required>
                   <? if (userData.saveOldMailPDFFolder) { ?>
                       <option class="listElement" value="<?=userData.saveOldMailPDFFolder ?>" selected ><?=userData.saveOldMailPDFFolder ?></option>
@@ -253,9 +273,9 @@
                     <? if (folders[i] !== userData.saveOldMailPDFFolder) { ?>
                       <option class="listElement" value="<?=folders[i]?>"   ><?=folders[i] ?></option>
                     <? } } ?>
-              </select></label><br>                
+                </select><br>                
 
-                <label>Label for processed old Mails: 
+                <i class="material-icons"  title="Assign all processed Mails a Google Mail Label">label_outline</i>processed old Mails:
 				<select id="saveOldMailPDFLabelProcessed" class="comboBox" name="saveOldMailPDFLabelProcessed" required>
                   <? if (userData.saveOldMailPDFLabelProcessed) { ?>
                       <option class="listElement" value="<?=userData.saveOldMailPDFLabelProcessed ?>" selected ><?=userData.saveOldMailPDFLabelProcessed ?></option>
@@ -264,57 +284,73 @@
                     <? if (labels[i] !== userData.saveOldMailPDFLabelProcessed) { ?>
                       <option class="listElement" value="<?=labels[i]?>"   ><?=labels[i] ?></option>
                     <? } } ?>
-            	</select> All Mails which are processed get this Label.</label><br>
+            	</select> All Mails which are processed get this Label.<br>
             	
-            	<label>Google Mail Search Pattern:
-				<input class="scriptPartMax" name="saveOldMailPDFSearch" id="saveOldMailPDFSearch" type="text" value="<?=userData.saveOldMailPDFSearch?>"  /></label>
+            	<i class="material-icons" title="Google Mail Search Pattern">find_in_page</i>Google Mail Search Pattern:
+				<input class="scriptPartMax" name="saveOldMailPDFSearch" id="saveOldMailPDFSearch" type="text" value="<?=userData.saveOldMailPDFSearch?>"  />
           	</p>          
+       </div>
 
-          </div>      
-             <p />
-
+       <div class="mdl-card__actions mdl-card--border">
+         <label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="saveOldMailPDFActive" title="Activate or deactivate the automated running of this Script. Please don't forget to save changes at bottom of this page!">
+           <input rel="saveOldMailPDFActive" class="mdl-checkbox__input" type="checkbox" id="saveOldMailPDFActive" <? if (userData.saveOldMailPDFActive === 'true') { ?>checked<? } ?> />
+           <span class="mdl-checkbox__label">Activate old Mail archiving</span>
+           <small>If activated this script would automatically started every 1. of month.</small>
+         </label>
+         <!-- a href="javascript:runScript('saveOldMail')"><i class="material-icons">directions_run</i> start for testing</a --> 
+       </div>
+            
+        <div class="mdl-card__menu">
+          <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect" title="start sript for testing" onClick="javascript:runScript('saveOldMail')"><i class="material-icons">directions_run</i></button>
+        </div>
       </div>
-    </section>
 <!-- -------------------------------------------------------------------------------------------------------------------- -->    
-    <section class="mdl-layout__tab-panel" id="scroll-tab-4">
-      <div class="page-content">
-          <div class="scriptPartAddInfo" id="deleteOldMail" title="">
-              <a href="javascript:runScript('deleteOldMail')">run script deleteOldMail</a>        
-          </div>
-          <div class="scriptPart">
-          	<strong>delete old mails</strong><br>
-          	Allows to delete mails which are outdated<br>
+      <div class="script-card mdl-card  mdl-shadow--4dp">
+        <div class="mdl-card__title">
+          <h2 class="mdl-card__title-text">Delete Old Mails</h2>
+        </div>  
+        
+        <div class="mdl-card__supporting-text">
+          Allows to delete mails which are outdated. The difference is that these Mails will be deleted after defined time.
+        </div>
+
+        <div class="mdl-card__media">
           	<p>
-              <label>Activate delete old Mails<span class="requiredText">*</span>
-                <input rel="deleteOldMailActive" Title="Activate or deactivate the automated running of this Script." type="checkbox" <? if (userData.deleteOldMailActive === 'true') { ?>checked<? } ?> />
-              </label><small>If activated this script would automatically started once every day.</small><br>
-
-            	<label>Google Mail Search Pattern:
-				<input class="scriptPartMax" name="deleteOldMailSearchQuery" id="deleteOldMailSearchQuery" type="text" value="<?=userData.deleteOldMailSearchQuery?>"  /></label>
+            	<i class="material-icons" title="Google Mail Search Pattern">find_in_page</i>Google Mail Search Pattern:
+				<input class="scriptPartMax" name="deleteOldMailSearchQuery" id="deleteOldMailSearchQuery" type="text" value="<?=userData.deleteOldMailSearchQuery?>"  />
           	</p>          
-
-          </div>      
-         <p />
+       </div>
+       
+       <div class="mdl-card__actions mdl-card--border">
+         <label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="deleteOldMailActive" title="Activate or deactivate the automated running of this Script. Please don't forget to save changes at bottom of this page!">
+           <input rel="deleteOldMailActive" class="mdl-checkbox__input" type="checkbox" id="deleteOldMailActive" <? if (userData.deleteOldMailActive === 'true') { ?>checked<? } ?> />
+           <span class="mdl-checkbox__label">Activate delete old Mails</span>
+           <small>If activated this script would automatically started once every day.</small>
+         </label>
+         <!-- <a href="javascript:runScript('deleteOldMail')">run script deleteOldMail</a>      --> 
+       </div>
+            
+        <div class="mdl-card__menu">
+          <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect" title="start sript for testing" onClick="javascript:runScript('deleteOldMail')"><i class="material-icons">directions_run</i></button>
+        </div>
       </div>
-    </section>
 <!-- -------------------------------------------------------------------------------------------------------------------- -->    
-    <section class="mdl-layout__tab-panel" id="scroll-tab-5">
-      <div class="page-content">
-          <div class="scriptPartAddInfo" id="renameMail" title="">
-              <a href="javascript:runScript('renameMail')">run script renameMail</a>        
-          </div>
-          <div class="scriptPart">
-          	<strong>Group incomming system Mails into threads</strong><br>
-			This allows group incomming system mails into threads. It searches every x Minutes for mails whith the search pattern,
+      <div class="script-card mdl-card  mdl-shadow--4dp">
+        <div class="mdl-card__title">
+          <h2 class="mdl-card__title-text">Group incomming system Mails into threads</h2>
+        </div>  
+        
+        <div class="mdl-card__supporting-text">
+          This allows group incomming system mails into threads. It searches every x Minutes for mails whith the search pattern,
             which has not attached processed label or error label and then for every found mail a search for the request ID would be performed.
-            If older mails are found, a new mail would be generated to the found Mail (thread) and original mail would deleted (send to trash).<br>
+            If older mails are found, a new mail would be generated to the found Mail (thread) and original mail would deleted (send to trash).
+            <br>
+            <span class="requiredText">This Function is in Evaluation and may not work as expected! Will change Mail content and Subject of affected Mails.</span>
+        </div>
+
+        <div class="mdl-card__media">
           	<p>
-                <span class="requiredText">This Function is in Evaluation and may not work as expected! Will change Mail content and Subject of affected Mails.</span><br>
-                <label>Activate <span class="requiredText">*</span>
-                  <input rel="renameMailActive" Title="Activate or deactivate the automated running of this Script." type="checkbox" <? if (userData.renameMailActive === 'true') { ?>checked<? } ?> />
-                </label><small>If activated this script would automatically started every 5 minutes.</small><br>
-                
-                <label>Label for processed Mails: 
+                <i class="material-icons"  title="Assign all processed Mails a Google Mail Label">label_outline</i>processed old Mails:
 				<select id="renameMailLabelProcessed" class="comboBox" name="renameMailLabelProcessed" required>
                   <? if (userData.renameMailLabelProcessed) { ?>
                       <option class="listElement" value="<?=userData.renameMailLabelProcessed ?>" selected ><?=userData.renameMailLabelProcessed ?></option>
@@ -324,9 +360,9 @@
                       <option class="listElement" value="<?=labels[i]?>"   ><?=labels[i] ?></option>
                     <? } } ?>
 
-            	</select> All Mails which are processed get this Label.</label><br>
-
-                <label>Label for Mails with error during processing: 
+            	</select> All Mails which are processed get this Label.<br>
+                
+                <i class="material-icons"  title="Assign all processed Mails a Google Mail Label">label_outline</i>Label for Mails with error during processing:
                   <select id="renameMailLabelError" class="comboBox" name="renameMailLabelError" required>
                     <? if (userData.renameMailLabelError) { ?>
                         <option class="listElement" value="<?=userData.renameMailLabelError ?>" selected ><?=userData.renameMailLabelError ?></option>
@@ -336,7 +372,7 @@
                         <option class="listElement" value="<?=labels[i]?>"   ><?=labels[i] ?></option>
                       <? } } ?>
                   </select>
-                </label><br>
+                <br>
             	
 
                 <!-- 
@@ -345,22 +381,33 @@
                 </label><a href="https://regex101.com/#javascript" target="_blank">RegEx Help and Tester</a> <br>
                 -->
 
-                <label>Google Mail Search Pattern Enhancements:
+                <i class="material-icons" title="Google Mail Search Pattern">find_in_page</i>Google Mail Search Pattern Enhancements:
 				<input class="scriptPartMax" name="renameMailSearchQueryV2" id="renameMailSearchQueryV2" type="text" value="<?=userData.renameMailSearchQueryV2 ?>" /> All Mails with label processed and label error will be excluded automatically from search.
-				</label><br>
+				<br>
             	
-            	<label>Google Mail similar Search-Pattern Enhancements:
+            	<i class="material-icons" title="Google Mail Search Pattern">find_in_page</i>Google Mail similar Search-Pattern Enhancements:
 				<input class="scriptPartMax" name="renameMailSearchQueryV2Similar" id="renameMailSearchQueryV2Similar" type="text" value="<?=userData.renameMailSearchQueryV2Similar ?>" /> Will add RequestID or subject to search for automatically. This can be used to exclude special Mails, which should not be used as Main Mails for Thread. Example OutOfOffice mails, etc...
-				</label><br>
+				<br>
 
           	</p>          
-
-          </div>      
-          <p />
-      </div> <!-- class="page-content" -->
-    </section> <!-- class="mdl-layout__tab-panel" -->
+       </div>
+       
+       <div class="mdl-card__actions mdl-card--border">
+         <label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="renameMailActive" title="Activate or deactivate the automated running of this Script. Please don't forget to save changes at bottom of this page!">
+           <input rel="renameMailActive" class="mdl-checkbox__input" type="checkbox" id="renameMailActive" <? if (userData.renameMailActive === 'true') { ?>checked<? } ?> />
+           <span class="mdl-checkbox__label">Activate delete old Mails</span>
+           <small>If activated this script would automatically started every 5 minutes.</small>
+         </label>
+         <!-- <a href="javascript:runScript('renameMail')">run script deleteOldMail</a>      --> 
+       </div>
+            
+        <div class="mdl-card__menu">
+          <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect" title="start sript for testing" onClick="javascript:runScript('renameMail')"><i class="material-icons">directions_run</i></button>
+        </div>
+      </div>
+   
 <!-- -------------------------------------------------------------------------------------------------------------------- -->    
-
+</div> <!-- class="page-content" ->
 <!-- -------------------------------------------------------------------------------------------------------------------- -->    
 <footer class="mdl-mini-footer">
   <div class="mdl-mini-footer--left-section">
