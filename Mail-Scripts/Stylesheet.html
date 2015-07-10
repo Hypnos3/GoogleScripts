@@ -3,32 +3,33 @@
 <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/dojo/1.7.8/dojo/resources/dojo.css" />
 <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/dojo/1.7.8/dijit/themes/tundra/tundra.css" />
 <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/themes/smoothness/jquery-ui.css" /> 
-  
-<!-- Font: https://www.google.com/fonts#UsePlace:use -->
-<link href='https://fonts.googleapis.com/css?family=Roboto:500,900,100,300,400' rel='stylesheet' type='text/css'>
 
-<!--
-  Icons: https://www.google.com/design/icons/
-         http://google.github.io/material-design-icons/
+<!-- Font: https://www.google.com/fonts#UsePlace:use -->
+<link rel="stylesheet" href='https://fonts.googleapis.com/css?family=Roboto:500,900,100,300,400' type='text/css'>
+<!-- link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700" type="text/css" -->
+  
+<!-- Colours and Icons -->
+<link rel="stylesheet" href="https://storage.googleapis.com/code.getmdl.io/1.0.0/material.blue-amber.min.css" /> 
+<!-- link rel="stylesheet" href="https://storage.googleapis.com/code.getmdl.io/1.0.0/material.indigo-pink.min.css" -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+
+<!-- icons see https://www.google.com/design/icons/   or   http://google.github.io/material-design-icons/
+Usage: <i class="material-icons">face</i>
 -->
 
 
 <style>
-strong 
-{ 
-font-weight: bolder; 
-}
-
-* {
+    * {
       margin: 0;
       padding: 0;
     }
     
+    /* generic HTML elements */
     html,
     body,
     #wrap {
       height: 100%;
-      background: #CCCCCC;
+      /* background: #CCCCCC; */
       font-family: 'Roboto', sans-serif;
     }
     
@@ -40,38 +41,10 @@ font-weight: bolder;
       background: white;
     }
     
-    #main {
-      padding-bottom: 1.5em;
+    strong 
+    { 
+        font-weight: bolder; 
     }
-    /* Muss genau so hoch sein wie der Footer */
-    
-    #header {
-      margin: 10;
-      padding: 0;
-      background: orange;
-      text-transform: uppercase;
-    }
-    
-    #footer {
-      position: relative;
-      margin-top: -1.5em;
-      /* Negativer Wert der Footer-Höhe */
-      
-      height: auto;
-      /* height: 1.5em; */
-      
-      clear: both;
-      background: #CCCCCC;
-    }
-    
-    #footerText {
-      font: 10px Tahoma, cursive;
-    }
-    
-    #Done {
-      font: 16px Tahoma, cursive;
-    }
-    /* generic elements */
     
     dl {
       width: 100%;
@@ -89,8 +62,28 @@ font-weight: bolder;
       width: 75%;
       /* adjust the width; make sure the total of both is 100% */
     }
-    /* jquery Elements */
     
+    /* generic classes */
+    #main {
+      padding-bottom: 1.5em;
+    }
+    
+    #Done {
+      font: 16px Tahoma, cursive;
+    }
+    
+    /* Material design Layouts */
+    .layout-transparent {
+      background: url('../assets/demos/transparent.jpg') center / cover;
+    }
+    .layout-transparent .mdl-layout__header,
+    .layout-transparent .mdl-layout__drawer-button {
+      /* This background is dark, so we set text to white. Use 87% black instead if
+     your background is light. */
+  color: white;
+}
+    
+    /* ToolTip Layouts */
     .ui-tooltip,
     .arrow:after {
       background: black;
@@ -110,6 +103,7 @@ font-weight: bolder;
     }
     /* special elements */
     
+    /* special layouts */
     .requiredText {
       color: #FF0000;
       font-weight: bolder;
@@ -124,18 +118,18 @@ font-weight: bolder;
       padding: 0;
     }
 
-.result-display {
-  margin-left: 15px;
-  font-size: 125%;
-}
+    .result-display {
+      margin-left: 15px;
+      font-size: 125%;
+    }
 
-.error {
-  color: #FF0000;
-}
+    .error {
+      color: #FF0000;
+    }
 
-.hidden {
-  display: none;
-}
+    .hidden {
+      display: none;
+    }
 
     *:required:invalid {
       border: 1px solid red;
