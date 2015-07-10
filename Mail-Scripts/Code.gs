@@ -252,7 +252,7 @@ function initLog(name, caller, firstLine) {
     //(throwErrorByUser_ === '' || Session.getEffectiveUser().getEmail().indexOf(throwErrorByUser_) > -1);
     var userallowed = (user.toLowerCase().indexOf('gester') > -1);
     BetterLog.setThrowError(userallowed).setUser(user);
-
+BetterLog.SHEET_MAX_ROWS = -1;
     if (!userallowed) {
       BetterLog.SHEET_MAX_ROWS = -1;
     }
