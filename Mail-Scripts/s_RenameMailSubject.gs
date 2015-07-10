@@ -17,12 +17,14 @@ other:
 */
  
 var mailExcludeId = "MailChangedByScriptX";
-var scriptVersion = "4e";
+var RenameMailScriptVer_ = "5a";
+var RuntimeIsOverMax_ = false;
+var RenameMailScriptStartTime_ = new Date(); 
 
 // This will auto-save the image attachments from Gmail to Google Drive
 function Exec_Gmail_Rename_SystemMails(runParam)
 {
-  initLog('RenameMail',arguments.callee.name + scriptVersion,'TestMode for ' + scriptVersion);
+  initLog('RenameMail',arguments.callee.name + RenameMailScriptVer_); //,'TestMode for ' + RenameMailScriptVer_
   //Logger.setLevel("FINEST");
 
   //define aftzer what time the script should be retriggered
@@ -35,8 +37,6 @@ function Exec_Gmail_Rename_SystemMails(runParam)
   try
   {
     // to calc elapsed time
-    var isOverMaxRuntime = false,
-        startTime = new Date(); 
     var userProperties = PropertiesService.getUserProperties();
     var testMode = (userProperties.getProperty('TestMode')=== 'true');
     var labelNameProcessed = userProperties.getProperty('renameMailLabelProcessed'); //"z/processed mail";
@@ -56,10 +56,10 @@ function Exec_Gmail_Rename_SystemMails(runParam)
     // Get start index if we hit max execution time last run
     var LastStart = Date.parse(userProperties.getProperty(arguments.callee.name + "-LastStart")) || -10000;
     
-    if (Math.round((startTime - LastStart)/1000) < 360) {
-      throw new Error('Function is already running!\nPlease wait until complete or at least 6 Minutes!\nstartTime=' + startTime + '\nLastStart=' + LastStart + '\ndifference='+Math.round((startTime - LastStart)/1000));
+    if (Math.round((RenameMailScriptStartTime_ - LastStart)/1000) < 360) {
+      throw new Error('Function is already running!\nPlease wait until complete or at least 6 Minutes!\nScript StartTime=' + RenameMailScriptStartTime_ + '\nLastStart=' + LastStart + '\ndifference='+Math.round((RenameMailScriptStartTime_ - LastStart)/1000));
     }    
-    userProperties.setProperty(arguments.callee.name + "-LastStart",startTime);
+    userProperties.setProperty(arguments.callee.name + "-LastStart",RenameMailScriptStartTime_);
 
     
     var labelProcessed = GmailApp.getUserLabelByName(labelNameProcessed);   
@@ -78,23 +78,23 @@ function Exec_Gmail_Rename_SystemMails(runParam)
     var searchQuery = searchQuery + " -label:" + labelNameProcessed + " -label:" + labelNameError + " -" + mailExcludeId;
     
     var searchQuerySimilar = userProperties.getProperty('renameMailSearchQueryV2Similar');
-    var searchRegex = userProperties.getProperty('renameMailIDRegex');
+    //var searchRegex = userProperties.getProperty('renameMailIDRegex');
 
     var thread = searchThreads_(searchQuery);
 
-    while (thread)
+    while (thread && !RuntimeIsOverMax_)
     {
       var messages = thread.getMessages();
       
       thread.addLabel(labelError);    
       if (messages) {
-        Logger.setCaller(arguments.callee.name + scriptVersion).log('processing mail: "' + messages[0].getSubject() + '" (searchQuery="' + searchQuery + '" retriggertime=' + retriggertime + ')');
+        Logger.setCaller(arguments.callee.name + RenameMailScriptVer_).log('processing mail: "' + messages[0].getSubject() + '"\nsearchQuery="' + searchQuery + '"\nretriggertime=' + retriggertime);
         
         for (var y=0; y<messages.length; y++)
         {          
           try
           {		
-            processMessageGeneric_(messages[y], testMode, labelProcessed, labelNameProcessed, searchQuerySimilar, searchRegex);      
+            processMessageGeneric_(messages[y], testMode, labelProcessed, labelNameProcessed, searchQuerySimilar);      
             if (!testMode) {  
               thread.removeLabel(labelError);
               thread.addLabel(labelProcessed);
@@ -102,72 +102,56 @@ function Exec_Gmail_Rename_SystemMails(runParam)
           } catch (e) {
             e = (typeof e === 'string') ? new Error(e) : e;
             if (e.message.indexOf('Utilities.sleep') > -1) {
-              Logger.setCaller(arguments.callee.name + scriptVersion).warning(e);
-              //Logger.setCaller(arguments.callee.name + scriptVersion).warning('Error occured, which will be ignored!! %s: %s (line %s, file "%s"). Stack: "%s" . While processing "%s".',
+              Logger.setCaller(arguments.callee.name + RenameMailScriptVer_).warning(e);
+              //Logger.setCaller(arguments.callee.name + RenameMailScriptVer_).warning('Error occured, which will be ignored!! %s: %s (line %s, file "%s"). Stack: "%s" . While processing "%s".',
               //               e.name||'', e.message||'', e.lineNumber||'', e.fileName||'', e.stack||'', messages[y].getSubject()||'');
               thread.removeLabel(labelError);
               return;
             }
-            Logger.setCaller(arguments.callee.name + scriptVersion).severe(e);
+            Logger.setCaller(arguments.callee.name + RenameMailScriptVer_).severe(e);
             messages[y].markUnread();
           }        
+          if (Math.round((new Date() - RenameMailScriptStartTime_)/1000) > 280) { //300  - 360 seconds is Google Apps Script max run time
+            //We've hit max runtime. 
+            RuntimeIsOverMax_ = true;
+            break;
+          }
         }
       }
-      
-      if (Math.round((new Date() - startTime)/1000) > 250) { //300  - 360 seconds is Google Apps Script max run time
-        //We've hit max runtime. 
-        isOverMaxRuntime = true;
-        Logger.setCaller(arguments.callee.name + scriptVersion).warning('Hit max run time!');
+      if (!RuntimeIsOverMax_) {
+        thread = searchThreads_(searchQuery);
+      } else {
         thread = undefined;
-        //retrigger in two Minutes
-        retriggertime = 1; //only allowed 1,5,10,15...
+      }
+      
+      /*
+      if (Math.round((new Date() - RenameMailScriptStartTime_)/1000) > 250) { //300  - 360 seconds is Google Apps Script max run time
+        //We've hit max runtime. 
+        RuntimeIsOverMax_ = true;
+        thread = undefined;
       } else {
         thread = searchThreads_(searchQuery);
-      }
+      }*/
     }
   } catch (e) {
     e = (typeof e === 'string') ? new Error(e) : e;
-    Logger.setCaller(arguments.callee.name + scriptVersion).severe(e);
+    Logger.setCaller(arguments.callee.name + RenameMailScriptVer_).severe(e);
 
     if (enhancedOutput) {
       throw e;
     }
   } finally {
+    if (RuntimeIsOverMax_) {
+      Logger.setCaller(arguments.callee.name + RenameMailScriptVer_).warning('Hit max run time!');
+      //retrigger in two Minutes
+      retriggertime = 1; //only allowed 1,5,10,15...
+    }
+    
     userProperties.deleteProperty(arguments.callee.name + "-LastStart");
     if (checkProperty_('renameMailActive', 'false') === 'true') {
       activateTrigger_(arguments.callee.name, retriggertime);
     }
   }
-}
-
-//Setup Trigger:  
-function activateTrigger_(func, newTime) {
-  try {
-    if (!newTime) {
-      newTime = 15; //retriggertime - only allowed 1,5,10,15...
-    }    
-    
-    var triggers = ScriptApp.getProjectTriggers();
-    for (var i = 0; i < triggers.length; i++) {
-      if (triggers[i].getHandlerFunction()===func) {
-        call_(function(){ ScriptApp.deleteTrigger(triggers[i]); });
-      }
-    }
-  } catch (ex) {
-    ex = (typeof ex === 'string') ? new Error(ex) : ex;
-    Logger.setCaller(arguments.callee.name).severe('Error deleteTrigger for "' + func + '" with time=' + newTime + '!');
-    Logger.severe(ex);
-  }
-  
-  try {
-    call_(function(){
-      ScriptApp.newTrigger(func).timeBased().everyMinutes(newTime).create(); //retriggertime - only allowed 1,5,10,15... 
-    });
-  } catch (ex) {
-    ex = (typeof ex === 'string') ? new Error(ex) : ex;
-    Logger.setCaller(arguments.callee.name).severe('Not Possible to activate Trigger for "' + func + '" with time=' + newTime + '!! May be deactivated!!!');
-    Logger.severe(ex);
-  } 
 }
 
 function searchThreads_(searchQuery)
@@ -188,7 +172,7 @@ function searchThreads_(searchQuery)
   return threads[0]; //messages[messages.length-1];
 }
 
-function processMessageGeneric_(message, testMode, excludeLabel, excludeLabelName, searchQueryEnhancement, searchRegex)
+function processMessageGeneric_(message, testMode, excludeLabel, excludeLabelName, searchQueryEnhancement)
 {
   var originalSubject = message.getSubject();
   var bodyHtml = message.getBody().trim();
@@ -198,7 +182,7 @@ function processMessageGeneric_(message, testMode, excludeLabel, excludeLabelNam
   var messageThreadId = message.getThread().getId();
   var rawData= message.getRawContent();
   var sender = Session.getEffectiveUser().getEmail();
-  Logger.setCaller(arguments.callee.name + scriptVersion).finer("--------------------------> " + originalSender + " Subject=" + originalSubject);
+  Logger.setCaller(arguments.callee.name + RenameMailScriptVer_).finer("--------------------------> " + originalSender + " Subject=" + originalSubject);
 
   if (rawData.indexOf(mailExcludeId) > -1)
   {
@@ -207,13 +191,14 @@ function processMessageGeneric_(message, testMode, excludeLabel, excludeLabelNam
   }
   
   var cleanSubject = originalSubject.replace(/\s\s+/g, ' '); //removing double spaces
-  var rexp = new RegExp(searchRegex, "g"); //"(\\b[A-Z]{2,}\\d{4,}\\b|\\b[A-Z]+\\d{2,}-\\d{4,}\\sv\\d+\\b|\\b[A-Z]+\\d{2,}-\\d{4,}\\b)" //https://regex101.com/#javascript  
-  var subjIDs = getTextParts_(cleanSubject, rexp);
+ 
+  var subjIDs = getTextParts_(cleanSubject, /(\b[A-Z]{2,}\d{4,}\b|\b[A-Z]+\d{2,}-\d{4,}\s+(v|V|Version|version|ver|VER|-)?\s*\d+\b|\b[A-Z]+\d{2,}-\d{4,}\b)/g);
 
-  var RequestID = subjIDs[0].replace(/\s+/g, ""); //.replace(/\[+(.*?)\]+/g,"$1");
+  var RequestIDOriginal = subjIDs[0];
+  var RequestID = RequestIDOriginal.replace(/\s+/g, ""); //.replace(/\[+(.*?)\]+/g,"$1");
   var RequestTyp = RequestID.replace(/\d/g, '');
   
-  cleanSubject = replaceAllIC_(originalSubject, subjIDs[0], '');
+  cleanSubject = replaceAllIC_(originalSubject, RequestIDOriginal, '');
   cleanSubject = replaceAllIC_(cleanSubject, RequestID, '');  
   cleanSubject = cleanSubject.replace(/\[+(.*?)\]+/g,"$1"); //removing multiple brackets
   cleanSubject = cleanSubject.replace(/(\s\s+|\s*\[+\s*\]+\s*|\s*\(+\s*\)+\s*|\s*\{+\s*\}+\s*)/g, ' '); // removing multiple spaces, empty brackets, etc...  
@@ -231,35 +216,22 @@ function processMessageGeneric_(message, testMode, excludeLabel, excludeLabelNam
 
   subjIDs = getTextPartsExt_(rawData, subjIDs, new RegExp("(\\b[A-Z]{2,}\\d{4,}\\b|\\b[A-Z]+\\d{2,}-\\d{4,}\\s*([a-zA-Z]+|\\s)\\s*\\d+\\b)", "g")) //SpecIDs werden nur mit Version betrachtet
 
-/*
-deactivated cause of problems
-
-Is for finding similar Request Express entrys (e.g. Sub Domain MSrs)
-
-Error: Not enough arguments
-     message: Not enough arguments
-     fileName: Code (BetterLog)
-     lineNumber: 173
-     stack:         at Code (BetterLog):173 (info)
-        at Code (BetterLog):305 (log)
-        at s_RenameMailSubject:255 (processMessageGeneric_) --> is now line 272 --> Logger.log("bodyHtml:\n" + bodyHtml);
-        at s_RenameMailSubject:96 (Exec_Gmail_Rename_SystemMails)
-
-     name: Error
-     
-
-  if (bodyHtml) {
-    Logger.log("bodyHtml:\n" + bodyHtml);
+  if ((orginalSenderID.indexOf("equest") > -1) && bodyHtml) {
+    //Is for finding similar Request Express entrys (e.g. Sub Domain Requests)
+    //Logger.log("bodyHtml:\n" + bodyHtml);
     //für RequestExpress ermitteln der Subject:
-    subjIDs = getTextPartsExt_(bodyHtml, subjIDs, new RegExp("--\s+(.|\n)+?\<br", "g")) //"-- (.*?)(\\<br|\\n)"
-    Logger.log("subjIDs: " + JSON.stringify(subjIDs));
+    subjIDs = getTextPartsExt_(bodyHtml, subjIDs, /--\s+(.|\n)+?\<br/g) //"-- (.*?)(\\<br|\\n)"
+    //Logger.log("subjIDs: " + JSON.stringify(subjIDs));
   }
-  */
 
   var query = "(from:(" + sender + " OR " + originalSender + ") (" + RequestID;
+  
+  if (RequestIDOriginal !== RequestID) {
+    query += " OR " + RequestIDOriginal;
+  }
     
   for (var i = 0, len = subjIDs.length; i < len; i++) {
-    if (subjIDs[i] !== RequestID) {      
+    if (subjIDs[i] !== RequestID && subjIDs[i] !== RequestIDOriginal ) {      
       if (subjIDs[i].indexOf(' ') >-1) {
         query += " OR (" + subjIDs[i] + ")";
       } else {
@@ -272,9 +244,9 @@ Error: Not enough arguments
   var replyMessage = GetMessage_(query, messageId, messageThreadId, date, originalSubject);
 
   if (replyMessage) {
-    Logger.info("Found other Message id=" + replyMessage.getId() + " subject=" + replyMessage.getSubject() + "' query='" + query + "'");
+    Logger.info("Found other Message id=" + replyMessage.getId() + "\nsubject=" + replyMessage.getSubject() + "'\nquery='" + query + "'");
   } else {
-    Logger.info("No other Message found for query='" + query + "'");
+    Logger.info("No other Message found.\nquery='" + query + "'");
   }
 
   var TextContent = parseMessage_(bodyHtml, Session.getEffectiveUser().getEmail());
@@ -318,9 +290,9 @@ Error: Not enough arguments
     var referenceID = replyMessage.getId(); //not working: replyMessage.getThread().getId()
     
     if (!cleanSubject) {
-      rawData = replaceText_(rawData,'<body','>','<body><h2>' + RequestID + '</h2><br>--------------------------------------------------------------------------------------<br>\r\n');
+      rawData = replaceText_(rawData,'<body','>','<body><h2>' + RequestIDOriginal + '</h2><br>--------------------------------------------------------------------------------------<br>\r\n');
     } else {
-      if (subject.indexOf(RequestID) > -1) {
+      if (subject.indexOf(RequestID) > -1 || subject.indexOf(RequestIDOriginal) > -1 ) {
         rawData = replaceText_(rawData,'<body','>','<body><h2>' + cleanSubject + '</h2><br>--------------------------------------------------------------------------------------<br>\r\n');
       } else {
         rawData = replaceText_(rawData,'<body','>','<body><h2>' + RequestID + ' - '+ cleanSubject + '</h2><br>--------------------------------------------------------------------------------------<br>\r\n');
@@ -342,9 +314,9 @@ Error: Not enough arguments
     } else {
       rawData = rawData + HtmlAddtable+'</body>';
     }
-    Logger.setCaller(arguments.callee.name + scriptVersion).info("try to created mail in thread threadId=" + replyMessage.getThread().getId() + " threadSubject='" + subject + "'");
+    Logger.setCaller(arguments.callee.name + RenameMailScriptVer_).info("try to created mail in thread threadId=" + replyMessage.getThread().getId() + " threadSubject='" + subject + "'");
     resp = createMessage_(rawData, labels, referenceID); 
-    Logger.setCaller(arguments.callee.name + scriptVersion).info("created mail in thread; mail id '" + resp.id + "' subject='" + subject + "' tothread=" + referenceID);
+    Logger.setCaller(arguments.callee.name + RenameMailScriptVer_).info("created mail in thread; mail id '" + resp.id + "' subject='" + subject + "' tothread=" + referenceID);
   }
   else
   {
@@ -355,14 +327,16 @@ Error: Not enough arguments
     
     if (cleanSubject) {
       rawData = replaceText_(rawData,'<body','>','<body><h2>' + cleanSubject + '</h2><br>--------------------------------------------------------------------------------------<br>\r\n');
-      subject = formatSubject_(cleanSubject).replace(/\s\s+/g, ' '); //.replace(/  +/g, ' ');
-    }
+      subject = formatSubject_(cleanSubject); //.replace(/\s\s+/g, ' '); //.replace(/  +/g, ' ');
+    }    
     
+    subject= ('[' + RequestID + '] ' + subject).trim();
+    /*
     if (!subject) {
-      subject= '[' + RequestID + '] ';
+      subject= '[' + RequestID + '] ' + cleanSubject;
     } else if (subject.indexOf(RequestID) < 0) {
       subject = '[' + RequestID + '] ' + subject;
-    }
+    }*/
 
     //rename Message;
     rawData = replaceText_(rawData, 'Subject:','\n','Subject: ' + subject + '\r\n');
@@ -371,9 +345,9 @@ Error: Not enough arguments
     } else {
       rawData = rawData + HtmlAddtable+'</body>';
     }
-    //Logger.setCaller(arguments.callee.name + scriptVersion).info('try to created mail subject= ' + subject );
+    //Logger.setCaller(arguments.callee.name + RenameMailScriptVer_).info('try to created mail subject= ' + subject );
     resp = createMessage_(rawData, labels );
-    Logger.setCaller(arguments.callee.name + scriptVersion).info("created new mail; no other Message found; mail id '" + resp.id + "' subject='" + subject);
+    Logger.setCaller(arguments.callee.name + RenameMailScriptVer_).info("created new mail; no other Message found; mail id '" + resp.id + "' subject='" + subject);
   }
   
   if (resp) {
@@ -415,8 +389,11 @@ function formatSubject_(subject)
                    "incomplete","comment","assigned","reassigned","resolved","resubmitted", "decision", "pending", "cancelled","successful","unsuccessful",
                    "release", "required","rework","rollout","rollback","ready","review","design","feasible","development ",
                    "handover", "production" , "prod", "itdc", "let", "new status", "submsr", "sub", "domain", "to ", "no ", "not ", "for ","from ", "re:","fw:","fwd:","aw:","wg:","fyi:","fyi ","ot:", "was:",
-                   "ms-a","ms-b","ms-pec","ms-p","ms-q","ms-w","ms-e","msr ", "cr ", "gr ", "setup.fc", "sew status", "is now", "insignoff", "inupdate", "Task Assignment"];
+                   "ms-a","ms-b","ms-pec","ms-p","ms-q","ms-w","ms-e","msr ", "cr ", "gr ", "setup.fc", "sew status", "is now", "insignoff", "inupdate", "task assignment"];
   var toReplaceLen = toReplace.length;
+  for (var index = 0; index < toReplaceLen; ++index) {
+    toReplace[index] = toReplace[index].toLowerCase();
+  }  
                   
   while (subject.length >= 4 && ok)   
   {
@@ -627,7 +604,7 @@ function createMessage_(raw, labelIDs, replyToMessageId)
 
   params['payload'] = JSON.stringify(payload);
 
-  Logger.setCaller(arguments.callee.name);
+  Logger.setCaller(arguments.callee.name + RenameMailScriptVer_);
 
   Logger.finest('url=' + url);
   Logger.finest('params=' + JSON.stringify(params));
@@ -664,6 +641,36 @@ function createMessage_(raw, labelIDs, replyToMessageId)
 /***************************************************************************************************************************
 *** Generic Functions:
 ***************************************************************************************************************************/
+
+//Setup Trigger:  
+function activateTrigger_(funcName, newTime) {
+  try {
+    if (!newTime) {
+      newTime = 15; //retriggertime - only allowed 1,5,10,15...
+    }    
+    
+    var triggers = ScriptApp.getProjectTriggers();
+    for (var i = 0; i < triggers.length; i++) {
+      if (triggers[i].getHandlerFunction()===funcName) {
+        call_(function(){ ScriptApp.deleteTrigger(triggers[i]); });
+      }
+    }
+  } catch (ex) {
+    ex = (typeof ex === 'string') ? new Error(ex) : ex;
+    Logger.setCaller(arguments.callee.name + RenameMailScriptVer_).severe('Error deleteTrigger for "' + funcName + '" with time=' + newTime + '!');
+    Logger.severe(ex);
+  }
+  
+  try {
+    call_(function(){
+      ScriptApp.newTrigger(funcName).timeBased().everyMinutes(newTime).create(); //retriggertime - only allowed 1,5,10,15... 
+    });
+  } catch (ex) {
+    ex = (typeof ex === 'string') ? new Error(ex) : ex;
+    Logger.setCaller(arguments.callee.name + RenameMailScriptVer_).severe('Not Possible to activate Trigger for "' + funcName + '" with time=' + newTime + '!! May be deactivated!!!');
+    Logger.severe(ex);
+  } 
+}
 
 /**
  * Replaces in a Text inside a Text with all occurences and ignores Case
@@ -709,7 +716,7 @@ function getTextPartsExt_(text, result, searchRegex)
   }
   
   for (var i = 0, len = text.length, j = result.length; i < len; i++) {
-    var item = text[i].replace(/\[+(.*?)\]+/g,"$1").replace(/(--\s*|\s*<br>\s*|\s*<br\s*\/>\s*|\s*<br\s*|\s*\n\s*|\s*\r\s*|\s*\t\s*)/g,' ').trim();
+    var item = text[i].replace(/\s*(-+|<br>|<br|<wbr>|<wbr|\/>|\n|\r|\t|\[+|\]+|\(+|\)+|\{+|\}+|&(nbsp|shy|lt|gt|quot|amp|apos|circ|tilde|#x200B);|:|\\+)\s*/g,' ').trim();
     if (item) {
       if (seen[item] !== 1) {
         seen[item] = 1;
