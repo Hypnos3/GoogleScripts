@@ -1,0 +1,365 @@
+<!-- Use a templated HTML printing scriptlet to import common stylesheet. -->
+<?!= HtmlService.createHtmlOutputFromFile('Stylesheet').getContent(); ?>
+<html>
+  <body>
+    <div id="header">
+      <h1><? if (testMode) { ?>TESTMODE: <? } ?>Mailscripts by Robert Gester </h1>
+    </div>
+    <div id="main" class="clearfix">
+      <div id="form">
+        <form id="form" action="" method="POST" target="_self">
+          <p class="requiredText">* Required Fields</p>
+          <? if (testMode) { ?>
+          <p class="requiredText">TESTMODE: not released!</p>
+          <? } ?>
+
+<!-- -------------------------------------------------------------------------------------------------------------------- -->
+          <!-- div class="scriptPartAddInfo" id="saveImageAttachments" title="">Save Image Attachments to Google Drive</div -->
+          <div class="scriptPartAddInfo" id="saveMailImages" title="">
+              <a href="javascript:runScript('saveMailImages')">run script saveMailImages</a>        
+          </div>
+          <div class="scriptPart">
+          	<strong>Save Mail Images to Google Drive</strong><br>
+          	Allows to save all Images to Google Drive to be able to search Text inside the Images by using Google Drive OCR.<br>
+          	<p>
+                <label>Activated<span class="requiredText">*</span>
+                  <input rel="saveMailImagesActive" Title="Activate or deactivate the automated running of this Script." type="checkbox" <? if (userData.saveMailImagesActive === 'true') { ?>checked<? } ?> />
+                </label><small>If activated this script would automatically started every 5 minutes.</small><br>
+                
+                <label>Google Drive Folder:
+				<!-- input name="saveMailImagesDriveFolder" id="saveMailImagesDriveFolder" type="text" value="<?=userData.saveMailImagesDriveFolder?>" /></label><br -->
+				<select id="saveMailImagesDriveFolder" Title="All Images would be saved to this Folder." class="comboBox" name="saveMailImagesDriveFolder" required>
+                  <? if (userData.saveMailImagesDriveFolder) { ?>
+                      <option class="listElement" value="<?=userData.saveMailImagesDriveFolder ?>" selected ><?=userData.saveMailImagesDriveFolder ?></option>
+                  <? }
+                    for (var i=0 ; i < folders.length; i++) { ?>
+                    <? if (folders[i] !== userData.saveMailImagesDriveFolder) { ?>
+                      <option class="listElement" value="<?=folders[i]?>"   ><?=folders[i] ?></option>
+                    <? } } ?>
+            	</select> <small>All Images would be saved to this Folder.</small></label><br>
+
+                <label>Label for processed Mails: 
+				<select id="saveMailImagesLabelProcessed" Title="All Mails which are processed get this Label." class="comboBox" name="saveMailImagesLabelProcessed" required>
+                  <? if (userData.saveMailImagesLabelProcessed) { ?>
+                      <option class="listElement" value="<?=userData.saveMailImagesLabelProcessed ?>" selected ><?=userData.saveMailImagesLabelProcessed ?></option>
+                  <? }
+                    for (var i=0 ; i < labels.length; i++) { ?>
+                    <? if (labels[i] !== userData.saveMailImagesLabelProcessed) { ?>
+                      <option class="listElement" value="<?=labels[i]?>"   ><?=labels[i] ?></option>
+                    <? } } ?>
+            	</select> <small>All Mails which are processed get this Label.</small></label><br>
+            	
+            	<label>Label for skipped Mails:
+				<select id="saveMailImagesLabelSkipped" Title="All Mails which are skipped get this Label." class="comboBox" name="saveMailImagesLabelSkipped" required>
+                  <? if (userData.saveMailImagesLabelSkipped) { ?>
+                      <option class="listElement" value="<?=userData.saveMailImagesLabelSkipped ?>" selected ><?=userData.saveMailImagesLabelSkipped ?></option>
+                  <? }
+                    for (var i=0 ; i < labels.length; i++) { ?>
+                    <? if (labels[i] !== userData.saveMailImagesLabelSkipped) { ?>
+                      <option class="listElement" value="<?=labels[i]?>"   ><?=labels[i] ?></option>
+                    <? } } ?>
+            	</select> <small>All Mails which are skipped get this Label.</small></label><br>
+
+                <label>Google Mail Search Pattern:
+				<input class="scriptPartMax" name="saveMailImagesSearch" id="saveMailImagesSearch" type="text" value="<?=userData.saveMailImagesSearch?>" /></label>
+          	</p>          
+          </div>
+
+<!-- -------------------------------------------------------------------------------------------------------------------- -->
+          <div class="scriptPartAddInfo" id="saveMailPDF" title="">
+              <a href="javascript:runScript('saveMailPDF')">run script saveMailPDF</a>        
+          </div>
+          <div class="scriptPart">
+          	<strong>Save Mails as PDF to Google Drive</strong><br>
+          	Allows to save Mails as PDF to Google Drive including Attachments, etc...<br>
+          	<p>
+                <label>Activated<span class="requiredText">*</span>
+                  <input rel="saveMailPDFActive" Title="Activate or deactivate the automated running of this Script." type="checkbox" <? if (userData.saveMailPDFActive === 'true') { ?>checked<? } ?> />
+                </label><small>If activated this script would automatically started every 5 minutes.</small><br>
+                
+				<fieldset id="saveMailPDF-row" name="saveMailPDFItems">
+    			  <legend>Entries</legend>
+                  <?
+                    var items = JSON.parse(userData.saveMailPDFItems);
+                    var item = items[0];
+                  ?>    
+                  <div class="saveMailPDF-row">
+				    <label>Label: 
+				      <select name="saveMailPDFItems[label]" id="saveMailPDFLabel" Title="All Mails which are should processed. Label would be removed after sucessfull processing. Use Filters to add this Label automatic to incomming Mails." class="comboBox" required>
+                  <? if (item.label) { ?>
+                      <option class="listElement" value="<?=item.label ?>" selected ><?=item.label ?></option>
+                  <? }
+                    for (var i=0 ; i < labels.length; i++) { ?>
+                    <? if (labels[i] !== item.label) { ?>
+                      <option class="listElement" value="<?=labels[i]?>"   ><?=labels[i] ?></option>
+                    <? } } ?>
+
+            	      </select>
+                    </label>
+
+            	    <label>Drive Folder:
+				      <!-- input name="saveMailPDFItems[folder]" type="text" value="<?=item.folder?>" /></label -->
+                      <select name="saveMailPDFItems[folder]" Title="Google Drive Folder where the files should be stored." class="comboBox" required>
+                        <? if (userData.saveMailImagesDriveFolder) { ?>
+                          <option class="listElement" value="<?=item.folder ?>" selected ><?=item.folder ?></option>
+                        <? }
+                        for (var i=0 ; i < folders.length; i++) { ?>
+                          <? if (folders[i] !== item.folder) { ?>
+                            <option class="listElement" value="<?=folders[i]?>"   ><?=folders[i] ?></option>
+                        <? } } ?>
+                      </select>
+                    </label>
+                      
+
+            	    <label>mail body:
+				      <input rel="saveMailPDFItems[mailBody]" Title="Check if body of mail should saved to Google Drive." type="checkbox" <? if (item.mailBody === 'true') { ?>checked<? } ?> />
+				    </label>
+
+            	    <label>Attachment:
+				      <input rel="saveMailPDFItems[mailAttachment]" Title="Check if all mail attachments of mail should saved to Google Drive." type="checkbox" <? if (item.mailAttachment === 'true') { ?>checked<? } ?> />
+				    </label>
+				
+                    <label>Label processed Mails: 
+				      <select name="saveMailPDFItems[labelProcessed]" Title="All Mails which are processed get this Label. Could be empty if processed mails should get no label." class="comboBox"  >
+                  <? if (item.labelProcessed) { ?>
+                      <option class="listElement" value="<?=item.labelProcessed ?>" selected ><?=item.labelProcessed ?></option>
+                  <? } else { ?>
+                      <option class="listElement" value="" selected >-- Empty --</option>
+                  <? }
+                    for (var i=0 ; i < labels.length; i++) { ?>
+                    <? if (labels[i] !== item.label) { ?>
+                      <option class="listElement" value="<?=labels[i]?>"   ><?=labels[i] ?></option>
+                    <? } } ?>                        
+            	      </select>
+                    </label>
+
+                    <input type="button" id="remove-row" name="remove-row" value="delete" onClick='$(this).parent().remove();' />
+		          </div>
+                  
+                  <?
+                    for (var pos=1 ; pos < items.length; pos++) { 
+                       var item = items[pos];
+                  
+                  //var item = {label: "x/Save As PDF", folder: "GMail/PDF Storage", mailBody: true, mailAttachment: true, labelProcessed: ""};
+    
+                  ?>
+				  <div class="row">
+				    <label>Label: 
+				      <select id="saveMailPDFLabel" name="saveMailPDFItems[label]" Title="All Mails which are should processed. Label would be removed after sucessfull processing. Use Filters to add this Label automatic to incomming Mails." class="comboBox" required>
+                  <? if (item.label) { ?>
+                      <option class="listElement" value="<?=item.label ?>" selected ><?=item.label ?></option>
+                  <? }
+                    for (var i=0 ; i < labels.length; i++) { ?>
+                    <? if (labels[i] !== item.label) { ?>
+                      <option class="listElement" value="<?=labels[i]?>"   ><?=labels[i] ?></option>
+                    <? } } ?>
+
+            	      </select>
+                    </label>
+
+            	    <label>Drive Folder:
+				      <!-- input name="saveMailPDFItems[folder]" type="text" value="<?=item.folder?>" /></label -->
+                      <select name="saveMailPDFItems[folder]" Title="Google Drive Folder where the files should be stored." class="comboBox" required>
+                        <? if (userData.saveMailImagesDriveFolder) { ?>
+                          <option class="listElement" value="<?=item.folder ?>" selected ><?=item.folder ?></option>
+                        <? }
+                        for (var i=0 ; i < folders.length; i++) { ?>
+                          <? if (folders[i] !== item.folder) { ?>
+                            <option class="listElement" value="<?=folders[i]?>"   ><?=folders[i] ?></option>
+                        <? } } ?>
+                      </select>
+                    </label>                    
+
+            	    <label>mail body:
+				      <input rel="saveMailPDFItems[mailBody]" Title="Check if body of mail should saved to Google Drive." type="checkbox" <? if (item.mailBody === 'true') { ?>checked<? } ?> />
+				    </label>
+
+            	    <label>Attachment:
+				      <input rel="saveMailPDFItems[mailAttachment]" Title="Check if all mail attachments of mail should saved to Google Drive." type="checkbox" <? if (item.mailAttachment === 'true') { ?>checked<? } ?> />
+				    </label>
+				
+                    <label>Label processed Mails: 
+				      <select class="comboBox" Title="All Mails which are processed get this Label. Could be empty if processed mails should get no label." name="saveMailPDFItems[labelProcessed]" >
+                  <? if (item.labelProcessed) { ?>
+                      <option class="listElement" value="<?=item.labelProcessed ?>" selected ><?=item.labelProcessed ?></option>
+                  <? } else { ?>
+                      <option class="listElement" value="" selected >-- Empty --</option>
+                  <? }
+                    for (var i=0 ; i < labels.length; i++) { ?>
+                    <? if (labels[i] !== item.label) { ?>
+                      <option class="listElement" value="<?=labels[i]?>"   ><?=labels[i] ?></option>
+                    <? } } ?>                        
+            	      </select>
+                    </label>
+
+                    <input type="button" id="remove-row" name="remove-row" value="delete" onClick='$(this).parent().remove();' />
+		          </div>
+                  <? } ?>
+                  <input type="button" id="add-row" name="add-row" value="Add row" />
+                </fieldset>                
+          	 </p>          
+          </div>
+
+<!-- -------------------------------------------------------------------------------------------------------------------- -->
+          <div class="scriptPartAddInfo" id="saveOldMail" title="">
+              <a href="javascript:runScript('saveOldMail')">run script saveOldMail</a>        
+          </div>
+          <div class="scriptPart">
+          	<strong>Old Mails archiving as PDF to Google Drive</strong><br>
+          	Allows to save old Mails as PDF to Google Drive including Attachments, etc...<br>
+          	<p>
+              <label>Activate old Mail archiving<span class="requiredText">*</span>
+                <input rel="saveOldMailPDFActive" Title="Activate or deactivate the automated running of this Script." type="checkbox" <? if (userData.saveOldMailPDFActive === 'true') { ?>checked<? } ?> />
+              </label><small>If activated this script would automatically started every 1. of month.</small><br>
+          	  
+              <label>Google Drive Folder to save old Mails:
+				<!-- input name="saveOldMailPDFFolder" id="saveOldMailPDFFolder" type="text" value="<?=userData.saveOldMailPDFFolder?>" /></label><br -->
+				<select id="saveOldMailPDFFolder" name="saveOldMailPDFFolder" class="comboBox" required>
+                  <? if (userData.saveOldMailPDFFolder) { ?>
+                      <option class="listElement" value="<?=userData.saveOldMailPDFFolder ?>" selected ><?=userData.saveOldMailPDFFolder ?></option>
+                  <? }
+                    for (var i=0 ; i < folders.length; i++) { ?>
+                    <? if (folders[i] !== userData.saveOldMailPDFFolder) { ?>
+                      <option class="listElement" value="<?=folders[i]?>"   ><?=folders[i] ?></option>
+                    <? } } ?>
+              </select></label><br>                
+
+                <label>Label for processed old Mails: 
+				<select id="saveOldMailPDFLabelProcessed" class="comboBox" name="saveOldMailPDFLabelProcessed" required>
+                  <? if (userData.saveOldMailPDFLabelProcessed) { ?>
+                      <option class="listElement" value="<?=userData.saveOldMailPDFLabelProcessed ?>" selected ><?=userData.saveOldMailPDFLabelProcessed ?></option>
+                  <? }
+                    for (var i=0 ; i < labels.length; i++) { ?>
+                    <? if (labels[i] !== userData.saveOldMailPDFLabelProcessed) { ?>
+                      <option class="listElement" value="<?=labels[i]?>"   ><?=labels[i] ?></option>
+                    <? } } ?>
+            	</select> All Mails which are processed get this Label.</label><br>
+            	
+            	<label>Google Mail Search Pattern:
+				<input class="scriptPartMax" name="saveOldMailPDFSearch" id="saveOldMailPDFSearch" type="text" value="<?=userData.saveOldMailPDFSearch?>"  /></label>
+          	</p>          
+
+          </div>
+
+<!-- -------------------------------------------------------------------------------------------------------------------- -->
+          <div class="scriptPartAddInfo" id="deleteOldMail" title="">
+              <a href="javascript:runScript('deleteOldMail')">run script deleteOldMail</a>        
+          </div>
+          <div class="scriptPart">
+          	<strong>delete old mails</strong><br>
+          	Allows to delete mails which are outdated<br>
+          	<p>
+              <label>Activate delete old Mails<span class="requiredText">*</span>
+                <input rel="deleteOldMailActive" Title="Activate or deactivate the automated running of this Script." type="checkbox" <? if (userData.deleteOldMailActive === 'true') { ?>checked<? } ?> />
+              </label><small>If activated this script would automatically started once every day.</small><br>
+
+            	<label>Google Mail Search Pattern:
+				<input class="scriptPartMax" name="deleteOldMailSearchQuery" id="deleteOldMailSearchQuery" type="text" value="<?=userData.deleteOldMailSearchQuery?>"  /></label>
+          	</p>          
+
+          </div>
+
+<!-- -------------------------------------------------------------------------------------------------------------------- -->
+          <div class="scriptPartAddInfo" id="renameMail" title="">
+              <a href="javascript:runScript('renameMail')">run script renameMail</a>        
+          </div>
+          <div class="scriptPart">
+          	<strong>Group incomming system Mails into threads</strong><br>
+			This allows group incomming system mails into threads. It searches every x Minutes for mails whith the search pattern,
+            which has not attached processed label or error label and then for every found mail a search for the request ID would be performed.
+            If older mails are found, a new mail would be generated to the found Mail (thread) and original mail would deleted (send to trash).<br>
+          	<p>
+                <span class="requiredText">This Function is in Evaluation and may not work as expected! Will change Mail content and Subject of affected Mails.</span><br>
+                <label>Activate <span class="requiredText">*</span>
+                  <input rel="renameMailActive" Title="Activate or deactivate the automated running of this Script." type="checkbox" <? if (userData.renameMailActive === 'true') { ?>checked<? } ?> />
+                </label><small>If activated this script would automatically started every 5 minutes.</small><br>
+                
+                <label>Label for processed Mails: 
+				<select id="renameMailLabelProcessed" class="comboBox" name="renameMailLabelProcessed" required>
+                  <? if (userData.renameMailLabelProcessed) { ?>
+                      <option class="listElement" value="<?=userData.renameMailLabelProcessed ?>" selected ><?=userData.renameMailLabelProcessed ?></option>
+                  <? }
+                    for (var i=0 ; i < labels.length; i++) { ?>
+                    <? if (labels[i] !== userData.renameMailLabelProcessed) { ?>
+                      <option class="listElement" value="<?=labels[i]?>"   ><?=labels[i] ?></option>
+                    <? } } ?>
+
+            	</select> All Mails which are processed get this Label.</label><br>
+
+                <label>Label for Mails with error during processing: 
+				<select id="renameMailLabelError" class="comboBox" name="renameMailLabelError" required>
+                  <? if (userData.renameMailLabelError) { ?>
+                      <option class="listElement" value="<?=userData.renameMailLabelError ?>" selected ><?=userData.renameMailLabelError ?></option>
+                  <? }
+                    for (var i=0 ; i < labels.length; i++) { ?>
+                    <? if (labels[i] !== userData.renameMailLabelError) { ?>
+                      <option class="listElement" value="<?=labels[i]?>"   ><?=labels[i] ?></option>
+                    <? } } ?>
+                
+            	</select></label><br>
+            	
+
+                <label>Extractor for ID from Mail subject:
+				<input class="scriptPartMax" name="renameMailIDRegex" id="renameMailIDRegex" type="text" value="<?=userData.renameMailIDRegex?>" />
+                </label><a href="https://regex101.com/#javascript" target="_blank">RegEx Help and Tester</a> <br>
+
+                <label>Google Mail Search Pattern Enhancements:
+				<input class="scriptPartMax" name="renameMailSearchQueryV2" id="renameMailSearchQueryV2" type="text" value="<?=userData.renameMailSearchQueryV2 ?>" /> All Mails with label processed and label error will be excluded automatically from search.
+				</label><br>
+            	
+            	<label>Google Mail similar Search-Pattern Enhancements:
+				<input class="scriptPartMax" name="renameMailSearchQueryV2Similar" id="renameMailSearchQueryV2Similar" type="text" value="<?=userData.renameMailSearchQueryV2Similar ?>" /> Will add RequestID or subject to search for automatically. This can be used to exclude special Mails, which should not be used as Main Mails for Thread. Example OutOfOffice mails, etc...
+				</label><br>
+
+          	</p>          
+
+          </div>
+
+<!-- -------------------------------------------------------------------------------------------------------------------- -->
+          <hr />          
+          <!-- Hidden input Fields -->
+          <? if (testMode) { ?>
+          <input type="hidden" id="testMode" name="testMode" value="true">
+          <? } ?>
+
+          <table id="buttonsTable">
+            <tbody>
+              <tr>
+                <td class="ss-form-entry goog-inline-block" id="navigation-buttons" dir="ltr">
+                  <input type="button" id="submitButton" value="Save" onClick="onSave(this.form)" />
+                  <input type="button" id="resetButton" value="ResetAll" onclick="onReset()" />
+                  <? if (canClose) { ?>
+                  <input type="button" id="cancelButton" value="Cancel" onclick="onClose()" />
+                  <? } ?>
+                  <? if (testMode) { ?>
+                  <!--
+                          <input type="button" id="testButton" value="showDialog" onclick="showDialog('my title 1','<p>the first text</p>')" />
+                          <input type="button" id="testButton" value="showOkDialog" onclick="showOkDialog('my title 1','<p>the first text</p>')" />
+                          <input type="button" id="testButton" value="processingMailData" onclick="processingMailData()" />
+                  -->
+                  <? } ?>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <hr />
+        </form>
+      </div> <!-- div id="form" -->
+      </div> <!-- id="main" -->
+    <div id="dialog" title="Bitte Warten...">
+      <p>Der Request wurde an den Server zur Bearbeitung gesendet und es dauert etwas bis dieser eine Rückantwort liefert.</p>
+    </div>
+  </body>
+</html>
+
+<!-- Store data passed to template here, so it is available to the
+     imported JavaScript. -->
+<script>
+    var globalTestMode = <?!= testMode ?>;
+    var globalCurrentUrl = <?=ScriptApp.getService().getUrl()?>;
+    var globalOAuthToken = <?=ScriptApp.getOAuthToken()?>;
+
+</script>
+
+<!-- Use a templated HTML printing scriptlet to import JavaScript. -->
+<?!= HtmlService.createHtmlOutputFromFile('JavaScript').getContent(); ?>
