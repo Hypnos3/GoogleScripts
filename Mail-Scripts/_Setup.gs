@@ -29,7 +29,7 @@ function SetupAllData()
 
   checkProperty_('renameMailSearchQueryV2', '(request.application@globalfoundries.com OR globalfoundries@service-now.com OR from:setup.FC) -subject:{redirect} -has:attachment');
   //checkProperty_('renameMailSearchQuery', '(request.application@globalfoundries.com OR globalfoundries@service-now.com OR Request Application OR ServiceNow) -subject:{redirect} -has:attachment');  
-  checkProperty_('renameMailIDRegex', '(\\b[A-Z]{2,}\\d{4,}\\b|\\b[A-Z]+\\d{2,}-\\d{4,}\\sv\\d+\\b|\\b[A-Z]+\\d{2,}-\\d{4,}\\b)'); //EICR1001004
+  //checkProperty_('renameMailIDRegex', '(\\b[A-Z]{2,}\\d{4,}\\b|\\b[A-Z]+\\d{2,}-\\d{4,}\\sv\\d+\\b|\\b[A-Z]+\\d{2,}-\\d{4,}\\b)'); //EICR1001004
   checkProperty_('renameMailSearchQueryV2Similar', '-subject:((Out of office) OR OOO)');
   
   if (checkProperty_('renameMailActive', 'false') === 'true')
