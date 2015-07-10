@@ -410,20 +410,16 @@
       //--------------------------------------------------------------------------------------------------------------------------------------------------
       // -- add-row
       //--------------------------------------------------------------------------------------------------------------------------------------------------
-    jQuery(function($){
-      var $addbutton = $('#add-row'),
-      $row = $('.saveMailPDF-row').clone();
+    var $saveMailPDFrow = $('.saveMailPDF-row').clone();
     
-      $addbutton.click(function(){
-        $row.clone().insertBefore( $addbutton );
+    function addRowButton(addbutton) {
+      $saveMailPDFrow.clone().insertBefore( addbutton );
         
         $( ".comboBox" ).combobox();
         $( "#toggle" ).click(function() {
             $( ".comboBox" ).toggle();
         });
-      });
-    
-    });
+    }
   
     //<!-- ------------------------------------------------------------------------- -->
     // Auto Complete
